@@ -23,6 +23,30 @@ namespace TextureRipper
         public MainWindow()
         {
             InitializeComponent();
+            
+            
         }
+        
+        private void LeftButton1_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            // Handle the left button 1 click event
+        }
+
+        private void LeftButton2_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            // Handle the left button 2 click event
+        }
+
+        private void LeftButton3_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            // Handle the left button 3 click event
+        }
+
+        private void CloseButton_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            // Close the application
+            Application.Current.Shutdown();
+        }
+
     }
 }

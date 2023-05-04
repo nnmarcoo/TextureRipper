@@ -12,19 +12,87 @@
         Background="Transparent"
         AllowsTransparency="True"
         >
-    <Border Background="#272537"
-            CornerRadius="20">
-        <Grid>
+    <Border Background="#2c2f33" CornerRadius="20">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Top row -->
+        <Grid Grid.Row="0" Background="#42454a">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width= "200"/>
-                <ColumnDefinition/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
-            
-            <Grid.RowDefinitions>
-                <RowDefinition Height = "75"/>
-                <RowDefinition/>
-            </Grid.RowDefinitions>
-            
+
+            <!-- Left-side image buttons -->
+            <Border Grid.Column="0" Width="30" Height="30" 
+                    MouseLeftButtonUp="LeftButton1_MouseLeftButtonUp">
+                <Border.Style>
+                    <Style TargetType="Border">
+                        <Setter Property="Background" Value="Transparent"/>
+                        <Style.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#72767d"/>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </Border.Style>
+                <Image Source="images/save.png" Width="30" Height="30"/>
+            </Border>
+            <Border Grid.Column="1" Width="30" Height="30" 
+                    MouseLeftButtonUp="LeftButton2_MouseLeftButtonUp">
+                <Border.Style>
+                    <Style TargetType="Border">
+                        <Setter Property="Background" Value="Transparent"/>
+                        <Style.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#72767d"/>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </Border.Style>
+                <Image Source="images/square.png" Width="30" Height="30"/>
+            </Border>
+            <Border Grid.Column="2" Width="30" Height="30" 
+                    MouseLeftButtonUp="LeftButton3_MouseLeftButtonUp">
+                <Border.Style>
+                    <Style TargetType="Border">
+                        <Setter Property="Background" Value="Transparent"/>
+                        <Style.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#72767d"/>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </Border.Style>
+                <Image Source="images/line.png" Width="30" Height="30"/>
+            </Border>
+
+            <!-- Right-side image button -->
+            <Border Grid.Column="3" Width="30" Height="30" HorizontalAlignment="Right" 
+                    MouseLeftButtonUp="CloseButton_MouseLeftButtonUp">
+                <Border.Style>
+                    <Style TargetType="Border">
+                        <Setter Property="Background" Value="Transparent"/>
+                        <Style.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#72767d"/>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </Border.Style>
+                <Image Source="images/exit.png" Width="30" Height="30"/>
+            </Border>
         </Grid>
-    </Border>
+
+        <!-- Main content area -->
+        <Grid Grid.Row="1">
+            <!-- Your content here -->
+        </Grid>
+    </Grid>
+</Border>
 </Window>

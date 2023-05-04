@@ -9,12 +9,22 @@
 
     <ItemGroup>
       <Folder Include="Fonts\" />
-      <Folder Include="Images\" />
       <Folder Include="MVVM\Model\" />
       <Folder Include="MVVM\ViewModel\" />
       <Folder Include="MVVM\View\" />
       <Folder Include="Core\" />
       <Folder Include="Theme\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Remove="Images\save.png" />
+      <Resource Include="Images\save.png" />
+      <None Remove="Images\line.png" />
+      <Resource Include="Images\line.png" />
+      <None Remove="Images\square.png" />
+      <Resource Include="Images\square.png" />
+      <None Remove="Images\exit.png" />
+      <Resource Include="Images\exit.png" />
     </ItemGroup>
 
 </Project>
