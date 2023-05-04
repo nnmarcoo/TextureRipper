@@ -23,30 +23,35 @@ namespace TextureRipper
         public MainWindow()
         {
             InitializeComponent();
-            
-            
-        }
-        
-        private void LeftButton1_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
-        {
-            // Handle the left button 1 click event
         }
 
-        private void LeftButton2_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        private void TopRow_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            // Handle the left button 2 click event
+            if (e.ChangedButton == MouseButton.Left)
+            {
+                DragMove();
+            }
         }
 
-        private void LeftButton3_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+
+        private void SaveButtonUp(object sender, MouseButtonEventArgs e)
         {
-            // Handle the left button 3 click event
+            //throw new NotImplementedException();
         }
 
-        private void CloseButton_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        private void GridButtonUp(object sender, MouseButtonEventArgs e)
         {
-            // Close the application
+            //throw new NotImplementedException();
+        }
+
+        private void LineButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            //throw new NotImplementedException();
+        }
+
+        private void ExitButtonUp(object sender, MouseButtonEventArgs e)
+        {
             Application.Current.Shutdown();
         }
-
     }
 }
