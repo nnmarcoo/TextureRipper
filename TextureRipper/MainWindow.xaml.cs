@@ -12,6 +12,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Microsoft.Win32;
 
 namespace TextureRipper
 {
@@ -25,12 +26,6 @@ namespace TextureRipper
             InitializeComponent();
         }
         
-        private void Window_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            DragMove();
-        }
-
-
         private void ExitButtonUp(object sender, MouseButtonEventArgs e)
         {
             Application.Current.Shutdown();
@@ -38,7 +33,23 @@ namespace TextureRipper
 
         private void FileButtonUp(object sender, MouseButtonEventArgs e)
         {
-            
+            // Create OpenFileDialog
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+
+            // Set filter for file extension and default file extension
+            openFileDialog.Filter = "Text files (*.txt)|*.txt|All files (*.*)|*.*";
+            openFileDialog.DefaultExt = ".txt";
+
+            // Show dialog and get result
+            bool? result = openFileDialog.ShowDialog();
+
+            // Process result
+            if (result == true)
+            {
+                // Open document
+                string filename = openFileDialog.FileName;
+                MessageBox.Show("Selected file: " + filename);
+            }
         }
 
         private void LineButtonUp(object sender, MouseButtonEventArgs e)
@@ -54,6 +65,14 @@ namespace TextureRipper
         private void SaveButtonUp(object sender, MouseButtonEventArgs e)
         {
             
+        }
+
+        private void DragWindow(object sender, MouseButtonEventArgs e)
+        {
+            if (e.LeftButton == MouseButtonState.Pressed)
+            {
+                DragMove();
+            }
         }
     }
 }
