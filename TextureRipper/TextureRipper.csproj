@@ -13,7 +13,7 @@
       <Folder Include="MVVM\Model\" />
       <Folder Include="MVVM\ViewModel\" />
       <Folder Include="MVVM\View\" />
-      <Folder Include="tetst\" />
+      <Folder Include="Core\" />
       <Folder Include="Theme\" />
     </ItemGroup>
 
