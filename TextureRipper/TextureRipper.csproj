@@ -8,7 +8,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <Folder Include="Fonts\" />
       <Folder Include="MVVM\Model\" />
       <Folder Include="MVVM\ViewModel\" />
       <Folder Include="MVVM\View\" />
@@ -21,10 +20,10 @@
       <Resource Include="Images\grid.png" />
       <Resource Include="Images\line.png" />
       <Resource Include="Images\save.png" />
-      <None Remove="Images\file.png" />
       <Resource Include="Images\file.png" />
-      <None Remove="Images\sep.png" />
       <Resource Include="Images\sep.png" />
+      <None Remove="Fonts\Roboto-Thin.ttf" />
+      <Resource Include="Fonts\Roboto-Thin.ttf" />
     </ItemGroup>
 
 </Project>

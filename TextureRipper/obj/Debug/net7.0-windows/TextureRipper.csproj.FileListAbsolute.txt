@@ -19,6 +19,11 @@ C:\Users\marco\Documents\GitHub\TextureRipper\TextureRipper\TextureRipper\obj\De
 C:\Users\marco\Documents\GitHub\TextureRipper\TextureRipper\TextureRipper\obj\Debug\net7.0-windows\TextureRipper.pdb
 C:\Users\marco\Documents\GitHub\TextureRipper\TextureRipper\TextureRipper\obj\Debug\net7.0-windows\TextureRipper.genruntimeconfig.cache
 C:\Users\marco\Documents\GitHub\TextureRipper\TextureRipper\TextureRipper\obj\Debug\net7.0-windows\ref\TextureRipper.dll
+C:\Users\marco\Documents\GitHub\TextureRipper\TextureRipper\bin\Debug\net7.0-windows\TextureRipper.exe
+C:\Users\marco\Documents\GitHub\TextureRipper\TextureRipper\bin\Debug\net7.0-windows\TextureRipper.deps.json
+C:\Users\marco\Documents\GitHub\TextureRipper\TextureRipper\bin\Debug\net7.0-windows\TextureRipper.runtimeconfig.json
+C:\Users\marco\Documents\GitHub\TextureRipper\TextureRipper\bin\Debug\net7.0-windows\TextureRipper.dll
+C:\Users\marco\Documents\GitHub\TextureRipper\TextureRipper\bin\Debug\net7.0-windows\TextureRipper.pdb
 C:\Users\marco\Documents\GitHub\TextureRipper\TextureRipper\obj\Debug\net7.0-windows\TextureRipper.csproj.AssemblyReference.cache
 C:\Users\marco\Documents\GitHub\TextureRipper\TextureRipper\obj\Debug\net7.0-windows\MainWindow.baml
 C:\Users\marco\Documents\GitHub\TextureRipper\TextureRipper\obj\Debug\net7.0-windows\MainWindow.g.cs
@@ -29,11 +34,6 @@ C:\Users\marco\Documents\GitHub\TextureRipper\TextureRipper\obj\Debug\net7.0-win
 C:\Users\marco\Documents\GitHub\TextureRipper\TextureRipper\obj\Debug\net7.0-windows\TextureRipper.AssemblyInfoInputs.cache
 C:\Users\marco\Documents\GitHub\TextureRipper\TextureRipper\obj\Debug\net7.0-windows\TextureRipper.AssemblyInfo.cs
 C:\Users\marco\Documents\GitHub\TextureRipper\TextureRipper\obj\Debug\net7.0-windows\TextureRipper.csproj.CoreCompileInputs.cache
-C:\Users\marco\Documents\GitHub\TextureRipper\TextureRipper\bin\Debug\net7.0-windows\TextureRipper.exe
-C:\Users\marco\Documents\GitHub\TextureRipper\TextureRipper\bin\Debug\net7.0-windows\TextureRipper.deps.json
-C:\Users\marco\Documents\GitHub\TextureRipper\TextureRipper\bin\Debug\net7.0-windows\TextureRipper.runtimeconfig.json
-C:\Users\marco\Documents\GitHub\TextureRipper\TextureRipper\bin\Debug\net7.0-windows\TextureRipper.dll
-C:\Users\marco\Documents\GitHub\TextureRipper\TextureRipper\bin\Debug\net7.0-windows\TextureRipper.pdb
 C:\Users\marco\Documents\GitHub\TextureRipper\TextureRipper\obj\Debug\net7.0-windows\TextureRipper.dll
 C:\Users\marco\Documents\GitHub\TextureRipper\TextureRipper\obj\Debug\net7.0-windows\refint\TextureRipper.dll
 C:\Users\marco\Documents\GitHub\TextureRipper\TextureRipper\obj\Debug\net7.0-windows\TextureRipper.pdb
