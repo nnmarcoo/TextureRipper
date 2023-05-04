@@ -18,40 +18,42 @@ namespace TextureRipper
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class MainWindow
     {
         public MainWindow()
         {
             InitializeComponent();
         }
-
-        private void TopRow_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        
+        private void Window_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            if (e.ChangedButton == MouseButton.Left)
-            {
-                DragMove();
-            }
+            DragMove();
         }
 
-
-        private void SaveButtonUp(object sender, MouseButtonEventArgs e)
-        {
-            //throw new NotImplementedException();
-        }
-
-        private void GridButtonUp(object sender, MouseButtonEventArgs e)
-        {
-            //throw new NotImplementedException();
-        }
-
-        private void LineButtonUp(object sender, MouseButtonEventArgs e)
-        {
-            //throw new NotImplementedException();
-        }
 
         private void ExitButtonUp(object sender, MouseButtonEventArgs e)
         {
             Application.Current.Shutdown();
+        }
+
+        private void FileButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            
+        }
+
+        private void LineButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            
+        }
+
+        private void GridButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            
+        }
+
+        private void SaveButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            
         }
     }
 }

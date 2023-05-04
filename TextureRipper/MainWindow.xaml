@@ -3,96 +3,65 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:TextureRipper"
         mc:Ignorable="d"
-        Height="600" 
-        Width="920"
+        Height="800" 
+        Width="1280"
         WindowStyle="None"
         ResizeMode="NoResize"
-        Background="Transparent"
-        AllowsTransparency="True"
-        >
-    <Border Background="#2c2f33" CornerRadius="20">
+        Background="#23272a"
+        AllowsTransparency="True">
+       
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
+            <RowDefinition Height="40"/>
+            <RowDefinition/>
         </Grid.RowDefinitions>
-
-        <!-- Top row -->
-        <Grid Grid.Row="0" Background="#42454a" MouseLeftButtonDown="TopRow_MouseLeftButtonDown">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
-
-            <!-- Left-side image buttons -->
-            <Border Grid.Column="0" Width="30" Height="30" 
-                    MouseLeftButtonUp="SaveButtonUp">
-                <Border.Style>
-                    <Style TargetType="Border">
-                        <Setter Property="Background" Value="Transparent"/>
-                        <Style.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Background" Value="#72767d"/>
-                            </Trigger>
-                        </Style.Triggers>
-                    </Style>
-                </Border.Style>
-                <Image Source="images/save.png" Width="30" Height="30"/>
-            </Border>
-            <Border Grid.Column="1" Width="30" Height="30" 
-                    MouseLeftButtonUp="GridButtonUp">
-                <Border.Style>
-                    <Style TargetType="Border">
-                        <Setter Property="Background" Value="Transparent"/>
-                        <Style.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Background" Value="#72767d"/>
-                            </Trigger>
-                        </Style.Triggers>
-                    </Style>
-                </Border.Style>
-                <Image Source="images/square.png" Width="30" Height="30"/>
-            </Border>
-            <Border Grid.Column="2" Width="30" Height="30" 
-                    MouseLeftButtonUp="LineButtonUp">
-                <Border.Style>
-                    <Style TargetType="Border">
-                        <Setter Property="Background" Value="Transparent"/>
-                        <Style.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Background" Value="#72767d"/>
-                            </Trigger>
-                        </Style.Triggers>
-                    </Style>
-                </Border.Style>
-                <Image Source="images/line.png" Width="30" Height="30"/>
-            </Border>
-
-            <!-- Right-side image button -->
-            <Border Grid.Column="3" Width="30" Height="30" HorizontalAlignment="Right" 
-                    MouseLeftButtonUp="ExitButtonUp">
-                <Border.Style>
-                    <Style TargetType="Border">
-                        <Setter Property="Background" Value="Transparent"/>
-                        <Style.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Background" Value="#72767d"/>
-                            </Trigger>
-                        </Style.Triggers>
-                    </Style>
-                </Border.Style>
-                <Image Source="images/exit.png" Width="30" Height="30"/>
-            </Border>
+        
+        <Grid Background="#2c2f33" MouseLeftButtonDown="Window_MouseLeftButtonDown">
+            <Image Source="images/save.png"
+                   VerticalAlignment="Center"
+                   HorizontalAlignment="Left"
+                   Width="25"
+                   Height="25"
+                   Margin="8,0,0,0"
+                   MouseLeftButtonUp="SaveButtonUp"/>
+            
+            <Image Source="images/sep.png"
+                   VerticalAlignment="Center"
+                   HorizontalAlignment="Left"
+                   Margin="23,0,0,0"/>
+            
+            <Image Source="images/grid.png"
+                   VerticalAlignment="Center"
+                   HorizontalAlignment="Left"
+                   Width="25"
+                   Height="25"
+                   Margin="55,0,0,0"
+                   MouseLeftButtonUp="GridButtonUp"/>
+            
+            <Image Source="images/line.png"
+                   VerticalAlignment="Center"
+                   HorizontalAlignment="Left"
+                   Width="25"
+                   Height="25"
+                   Margin="88,0,0,0"
+                   MouseLeftButtonUp="LineButtonUp"/>
+            
+            <Image Source="images/exit.png"
+                   VerticalAlignment="Center"
+                   HorizontalAlignment="Right"
+                   Width="25"
+                   Height="25"
+                   Margin="0,0,8,0"
+                   MouseLeftButtonUp="ExitButtonUp"/>
         </Grid>
-
-        <!-- Main content area -->
-        <Grid Grid.Row="1">
-            <!-- Your content here -->
-        </Grid>
+        
+        <Image Source="images/file.png"
+               Grid.Row="1"
+               HorizontalAlignment="Center"
+               VerticalAlignment="Center"
+               Width="100"
+               Height="100"
+               MouseLeftButtonUp="FileButtonUp"/>
     </Grid>
-</Border>
 </Window>
