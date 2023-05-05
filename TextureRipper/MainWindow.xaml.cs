@@ -1,5 +1,8 @@
-﻿using System.Windows;
+﻿using System;
+using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media.Imaging;
 using Microsoft.Win32;
 using Path = System.IO.Path;
 
@@ -11,7 +14,9 @@ namespace TextureRipper
     public partial class MainWindow
     {
         private string? _filename;
-        
+        private Point _dragMouseOrigin;
+        private double _zoom = 1;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -28,11 +33,15 @@ namespace TextureRipper
             };
 
             var result = openFileDialog.ShowDialog();
-            
-            if (result == true)
+
+            if (result != true) return;
+            if (!openFileDialog.FileName.Equals(""))
+            {
                 _filename = openFileDialog.FileName;
-            
-            MessageBox.Show(_filename);
+                InitializeCanvas();
+            }
+
+            //MessageBox.Show(_filename);
         }
 
         private void DragWindow(object sender, MouseButtonEventArgs e)
@@ -65,13 +74,73 @@ namespace TextureRipper
             if (e.Data.GetDataPresent(DataFormats.FileDrop))
             {
                 var files = (string[])e.Data.GetData(DataFormats.FileDrop);
-                if (Path.GetExtension(files[0]).Equals(".png")  ||
+                
+                if (Path.GetExtension(files[0]).Equals(".png") ||
                     Path.GetExtension(files[0]).Equals(".jpeg") ||
-                    Path.GetExtension(files[0]).Equals(".jpg")  ||
-                    Path.GetExtension(files[0]).Equals(".tiff"  ))
+                    Path.GetExtension(files[0]).Equals(".jpg") ||
+                    Path.GetExtension(files[0]).Equals(".tiff"))
+                {
                     _filename = files[0];
+                    InitializeCanvas();
+                }
+                
             }
-            MessageBox.Show(_filename);
+            //MessageBox.Show(_filename);
+        }
+
+        private void InitializeCanvas()
+        {
+            FileImage.Visibility = Visibility.Collapsed; // hide file image icon
+            FileText.Visibility = Visibility.Collapsed;  // hide file text
+            
+            var filePath = new Uri(_filename!); // make Uri for new file
+            var newImage = new BitmapImage(filePath); // make bitmap for new image
+            
+            SourceImage.Source = newImage; // set the new bitmap to the source image
+
+            Canvas.SetLeft(SourceImage, Window.ActualWidth/2 - newImage.Width/2); // center width
+            Canvas.SetTop(SourceImage, Window.ActualHeight/2 - newImage.Height/2); // center height
+        }
+
+        private void PanSourceImageDown(object sender, MouseButtonEventArgs e) 
+        {
+            _dragMouseOrigin = e.GetPosition(Canvas);// get original position of mouse
+        }
+
+        private void PanImage(object sender, MouseEventArgs e)
+        {
+            if (e.RightButton == MouseButtonState.Pressed)
+                DragDrop.DoDragDrop(SourceImage, SourceImage, DragDropEffects.Move);
+        }
+
+        private void Canvas_OnDragOver(object sender, DragEventArgs e)
+        {
+            Point dropPosition = e.GetPosition(Canvas);
+            
+            Canvas.SetLeft(SourceImage, Canvas.GetLeft(SourceImage) + (dropPosition.X - _dragMouseOrigin.X));
+            Canvas.SetTop(SourceImage, Canvas.GetTop(SourceImage) + (dropPosition.Y - _dragMouseOrigin.Y));
+            _dragMouseOrigin = dropPosition;
+        }
+
+        private void ZoomImage(object sender, MouseWheelEventArgs e)
+        {
+            _zoom = e.Delta < 0 ? 0.9 : 1.1;
+
+            double oldWidth = SourceImage.ActualWidth;
+            double oldHeight = SourceImage.ActualHeight;
+            
+            SourceImage.Height = oldHeight * _zoom;
+            SourceImage.Width = oldWidth * _zoom;
+
+            Point centerOn = Mouse.GetPosition(SourceImage);
+            Point approach = Mouse.GetPosition(Canvas);
+        }
+
+
+        private void CenterImage(FrameworkElement img)
+        {
+            Canvas.SetLeft(img, Canvas.ActualWidth/2 - img.Width/2);
+            Canvas.SetTop(img, Canvas.ActualHeight/2 - img.Height/2);
         }
     }
 }

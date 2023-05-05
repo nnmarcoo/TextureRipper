@@ -9,7 +9,8 @@
         WindowStyle="None"
         ResizeMode="NoResize"
         Background="#23272a"
-        AllowsTransparency="True">
+        AllowsTransparency="True"
+        x:Name="Window">
        
     <Grid>
         <Grid.RowDefinitions>
@@ -17,7 +18,48 @@
             <RowDefinition/>
         </Grid.RowDefinitions>
         
-        <Border Background="#2c2f33" MouseLeftButtonDown="DragWindow">
+        <Border Grid.Row="1"
+                Background="#23272a" 
+                Drop="ImageDrop"
+                AllowDrop="True">
+            <Grid>
+                <Canvas Background="Transparent"
+                        AllowDrop="True"
+                        x:Name="Canvas"
+                        MouseRightButtonDown="PanSourceImageDown"
+                        MouseMove="PanImage"
+                        DragOver="Canvas_OnDragOver"
+                        MouseWheel="ZoomImage">
+                    
+                    <Image
+                        x:Name="SourceImage"
+                        MouseRightButtonDown="PanSourceImageDown"
+                        MouseMove="PanImage"/>
+                    
+                </Canvas>
+                
+                <Image Source="images/file.png"
+                       x:Name="FileImage"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       Width="100"
+                       MouseLeftButtonUp="FileButtonUp"/>
+                
+                <TextBlock Text="Drag or select file to begin."
+                       x:Name="FileText"
+                       Background="Transparent"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       Foreground="Azure"
+                       FontFamily="Calibri"
+                       Margin="0,130,0,0"
+                       MouseLeftButtonUp="FileButtonUp"/>
+            </Grid>
+        </Border>
+        
+        <Border Background="#2c2f33" 
+                MouseLeftButtonDown="DragWindow"
+                Grid.Row="0">
             
             <Grid>
                 <Grid.ColumnDefinitions>
@@ -76,28 +118,6 @@
                     Click="ExitButtonClick">
                     <Image Source="Images/exit.png"/>
                 </Button>
-                
-            </Grid>
-        </Border>
-        
-        <Border Grid.Row="1" 
-                Background="#23272a" 
-                Drop="ImageDrop"
-                AllowDrop="True">
-            
-            <Grid>
-                <Image Source="images/file.png"
-                       HorizontalAlignment="Center"
-                       VerticalAlignment="Center"
-                       Width="100"
-                       MouseLeftButtonUp="FileButtonUp"/>
-                <TextBlock Text="Drag or select file to begin."
-                           Background="Transparent"
-                           HorizontalAlignment="Center"
-                           VerticalAlignment="Center"
-                           Foreground="Azure"
-                           FontFamily="Calibri"
-                           Margin="0,130,0,0"/>
             </Grid>
         </Border>
     </Grid>
