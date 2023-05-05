@@ -2,6 +2,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Microsoft.Win32;
 using Path = System.IO.Path;
@@ -99,6 +100,8 @@ namespace TextureRipper
 
             Canvas.SetLeft(SourceImage, Window.ActualWidth/2 - newImage.Width/2); // center width
             Canvas.SetTop(SourceImage, Window.ActualHeight/2 - newImage.Height/2); // center height
+            SourceImage.SetValue(RenderOptions.BitmapScalingModeProperty, BitmapScalingMode.NearestNeighbor);
+
         }
 
         private void PanSourceImageDown(object sender, MouseButtonEventArgs e) 
@@ -140,10 +143,7 @@ namespace TextureRipper
             Canvas.SetLeft(SourceImage, Canvas.GetLeft(SourceImage) - offsetX);
             Canvas.SetTop(SourceImage, Canvas.GetTop(SourceImage) - offsetY);
         }
-
-
-
-
+        
         private void CenterImage(FrameworkElement img)
         {
             Canvas.SetLeft(img, Canvas.ActualWidth/2 - img.Width/2);
