@@ -17,61 +17,82 @@
             <RowDefinition/>
         </Grid.RowDefinitions>
         
-        <Grid Background="#2c2f33" MouseLeftButtonDown="DragWindow" >
-               
-               <Image Source="images/save.png"
-                      VerticalAlignment="Center"
-                      HorizontalAlignment="Left"
-                      Width="25"
-                      Height="25"
-                      Margin="8,0,0,0"
-                      MouseLeftButtonUp="SaveButtonUp"/>
+        <Border Background="#2c2f33" MouseLeftButtonDown="DragWindow">
             
-               <Image Source="images/sep.png"
-                      VerticalAlignment="Center"
-                      HorizontalAlignment="Left"
-                      Margin="23,0,0,0"/>
-            
-               <Image Source="images/grid.png"
-                      VerticalAlignment="Center"
-                      HorizontalAlignment="Left"
-                      Width="25"
-                      Height="25"
-                      Margin="55,0,0,0"
-                      MouseLeftButtonUp="GridButtonUp"/>
-            
-               <Image Source="images/line.png"
-                      VerticalAlignment="Center"
-                      HorizontalAlignment="Left"
-                      Width="25"
-                      Height="25"
-                      Margin="88,0,0,0"
-                      MouseLeftButtonUp="LineButtonUp"/>
-            
-               <Image Source="images/exit.png"
-                      VerticalAlignment="Center"
-                      HorizontalAlignment="Right"
-                      Width="25"
-                      Height="25"
-                      Margin="0,0,8,0"
-                      MouseLeftButtonUp="ExitButtonUp"/>
-        </Grid>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="56"/>
+                    <ColumnDefinition Width="46"/>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                
+                <Button
+                    Grid.Column="0"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Center"
+                    Margin="8,0,0,0"
+                    Width="30"
+                    Height="30"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    Click="SaveButtonClick">
+                    <Image Source="Images/save.png"/>
+                </Button>
+                
+                <Button
+                    Grid.Column="1"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Center"
+                    Width="30"
+                    Height="30"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    Click="GridButtonClick">
+                    <Image Source="Images/grid.png"/>
+                </Button>
+                
+                <Button
+                    Grid.Column="2"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Center"
+                    Width="30"
+                    Height="30"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    Click="LineButtonClick">
+                    <Image Source="Images/line.png"/>
+                </Button>
+                
+                <Button
+                    Grid.Column="3"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Center"
+                    Margin="0,0,8,0"
+                    Width="30"
+                    Height="30"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    Click="ExitButtonClick">
+                    <Image Source="Images/exit.png"/>
+                </Button>
+                
+            </Grid>
+        </Border>
         
-               <Image Source="images/file.png"
-                      Grid.Row="1"
-                      HorizontalAlignment="Center"
-                      VerticalAlignment="Center"
-                      Width="100"
-                      Height="100"
-                      MouseLeftButtonUp="FileButtonUp"/>
-               <TextBlock Text="Drag or select file to begin."
-                        Grid.Row="1"
-                        Background="Transparent"
-                        HorizontalAlignment="Center"
-                        VerticalAlignment="Center"
-                        Foreground="Azure"
-                        FontFamily="/Fonts/#Roboto-Thin"
-                        Margin="0,130,0,0"/>
-               
+        <Image Source="images/file.png"
+               Grid.Row="1"
+               HorizontalAlignment="Center"
+               VerticalAlignment="Center"
+               Width="100"
+               MouseLeftButtonUp="FileButtonUp"/>
+        <TextBlock Text="Drag or select file to begin."
+                   Grid.Row="1"
+                   Background="Transparent"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   Foreground="Azure"
+                   FontFamily="/Fonts/#Roboto-Thin"
+                   Margin="0,130,0,0"/>
     </Grid>
 </Window>

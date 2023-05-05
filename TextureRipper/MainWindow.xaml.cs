@@ -25,11 +25,6 @@ namespace TextureRipper
         {
             InitializeComponent();
         }
-        
-        private void ExitButtonUp(object sender, MouseButtonEventArgs e)
-        {
-            Application.Current.Shutdown();
-        }
 
         private void FileButtonUp(object sender, MouseButtonEventArgs e)
         {
@@ -52,27 +47,30 @@ namespace TextureRipper
             }
         }
 
-        private void LineButtonUp(object sender, MouseButtonEventArgs e)
-        {
-            
-        }
-
-        private void GridButtonUp(object sender, MouseButtonEventArgs e)
-        {
-            
-        }
-
-        private void SaveButtonUp(object sender, MouseButtonEventArgs e)
-        {
-            
-        }
-
         private void DragWindow(object sender, MouseButtonEventArgs e)
         {
             if (e.LeftButton == MouseButtonState.Pressed)
-            {
                 DragMove();
-            }
+        }
+
+        private void ExitButtonClick(object sender, RoutedEventArgs e)
+        {
+            Application.Current.Shutdown();
+        }
+
+        private void LineButtonClick(object sender, RoutedEventArgs e)
+        {
+            
+        }
+
+        private void GridButtonClick(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void SaveButtonClick(object sender, RoutedEventArgs e)
+        {
+            
         }
     }
 }
