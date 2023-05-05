@@ -15,7 +15,6 @@ namespace TextureRipper
     {
         private string? _filename;
         private Point _dragMouseOrigin;
-        private double _zoom = 1;
 
         public MainWindow()
         {
@@ -124,17 +123,25 @@ namespace TextureRipper
 
         private void ZoomImage(object sender, MouseWheelEventArgs e)
         {
-            _zoom = e.Delta < 0 ? 0.9 : 1.1;
+            var zoom = e.Delta < 0 ? 0.7 : 1.3;
 
-            double oldWidth = SourceImage.ActualWidth;
-            double oldHeight = SourceImage.ActualHeight;
-            
-            SourceImage.Height = oldHeight * _zoom;
-            SourceImage.Width = oldWidth * _zoom;
+            double newWidth = SourceImage.ActualWidth * zoom;
+            double newHeight = SourceImage.ActualHeight * zoom;
 
-            Point centerOn = Mouse.GetPosition(SourceImage);
-            Point approach = Mouse.GetPosition(Canvas);
+            double dWidth = newWidth - SourceImage.ActualWidth;
+            double dHeight = newHeight - SourceImage.ActualHeight;
+
+            double offsetX = e.GetPosition(SourceImage).X * dWidth / SourceImage.ActualWidth;
+            double offsetY = e.GetPosition(SourceImage).Y * dHeight / SourceImage.ActualHeight;
+
+            SourceImage.Width = newWidth;
+            SourceImage.Height = newHeight;
+
+            Canvas.SetLeft(SourceImage, Canvas.GetLeft(SourceImage) - offsetX);
+            Canvas.SetTop(SourceImage, Canvas.GetTop(SourceImage) - offsetY);
         }
+
+
 
 
         private void CenterImage(FrameworkElement img)
