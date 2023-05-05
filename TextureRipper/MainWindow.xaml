@@ -80,19 +80,25 @@
             </Grid>
         </Border>
         
-        <Image Source="images/file.png"
-               Grid.Row="1"
-               HorizontalAlignment="Center"
-               VerticalAlignment="Center"
-               Width="100"
-               MouseLeftButtonUp="FileButtonUp"/>
-        <TextBlock Text="Drag or select file to begin."
-                   Grid.Row="1"
-                   Background="Transparent"
-                   HorizontalAlignment="Center"
-                   VerticalAlignment="Center"
-                   Foreground="Azure"
-                   FontFamily="/Fonts/#Roboto-Thin"
-                   Margin="0,130,0,0"/>
+        <Border Grid.Row="1" 
+                Background="#23272a" 
+                Drop="ImageDrop"
+                AllowDrop="True">
+            
+            <Grid>
+                <Image Source="images/file.png"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       Width="100"
+                       MouseLeftButtonUp="FileButtonUp"/>
+                <TextBlock Text="Drag or select file to begin."
+                           Background="Transparent"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"
+                           Foreground="Azure"
+                           FontFamily="Calibri"
+                           Margin="0,130,0,0"/>
+            </Grid>
+        </Border>
     </Grid>
 </Window>
