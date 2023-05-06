@@ -71,19 +71,18 @@ namespace TextureRipper
         }
         private void ImageDrop(object sender, DragEventArgs e)
         {
-            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            if (_filename != null) return;
+            if (!e.Data.GetDataPresent(DataFormats.FileDrop)) return;
+            
+            string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
+                
+            if (Path.GetExtension(files[0]).Equals(".png")  ||
+                Path.GetExtension(files[0]).Equals(".jpeg") ||
+                Path.GetExtension(files[0]).Equals(".jpg")  ||
+                Path.GetExtension(files[0]).Equals(".tiff")  )
             {
-                var files = (string[])e.Data.GetData(DataFormats.FileDrop);
-                
-                if (Path.GetExtension(files[0]).Equals(".png") ||
-                    Path.GetExtension(files[0]).Equals(".jpeg") ||
-                    Path.GetExtension(files[0]).Equals(".jpg") ||
-                    Path.GetExtension(files[0]).Equals(".tiff"))
-                {
-                    _filename = files[0];
-                    InitializeCanvas();
-                }
-                
+                _filename = files[0];
+                InitializeCanvas();
             }
             //MessageBox.Show(_filename);
         }
@@ -111,8 +110,18 @@ namespace TextureRipper
 
         private void PanImage(object sender, MouseEventArgs e)
         {
+            const int safezone = 100;
+            
             if (e.RightButton == MouseButtonState.Pressed)
                 DragDrop.DoDragDrop(SourceImage, SourceImage, DragDropEffects.Move);
+            
+            if (Canvas.GetLeft(SourceImage) > Canvas.ActualWidth-safezone        ||
+                SourceImage.ActualWidth + Canvas.GetLeft(SourceImage) < safezone ||
+                Canvas.GetTop(SourceImage) > Canvas.ActualHeight-safezone        ||
+                SourceImage.ActualHeight + Canvas.GetTop(SourceImage) < safezone  )
+                
+                CenterImage(SourceImage);
+   
         }
 
         private void Canvas_OnDragOver(object sender, DragEventArgs e)
@@ -126,28 +135,32 @@ namespace TextureRipper
 
         private void ZoomImage(object sender, MouseWheelEventArgs e)
         {
+            if (_filename == null) return;
+            if ((SourceImage.ActualWidth * (e.Delta < 0 ? 0.7 : 1.3)) > (4 * ActualWidth) || 
+                (SourceImage.ActualWidth * (e.Delta < 0 ? 0.7 : 1.3)) < (0.25 * ActualWidth)) return;
+            
             var zoom = e.Delta < 0 ? 0.7 : 1.3;
 
-            double newWidth = SourceImage.ActualWidth * zoom;
-            double newHeight = SourceImage.ActualHeight * zoom;
+            double newWidth = SourceImage.ActualWidth * zoom; // new width after zoom
+            double newHeight = SourceImage.ActualHeight * zoom; // new height after zoom
 
-            double dWidth = newWidth - SourceImage.ActualWidth;
-            double dHeight = newHeight - SourceImage.ActualHeight;
+            double dWidth = newWidth - SourceImage.ActualWidth; // difference between new width and old width
+            double dHeight = newHeight - SourceImage.ActualHeight; // difference between new height and old height
 
             double offsetX = e.GetPosition(SourceImage).X * dWidth / SourceImage.ActualWidth;
             double offsetY = e.GetPosition(SourceImage).Y * dHeight / SourceImage.ActualHeight;
 
-            SourceImage.Width = newWidth;
-            SourceImage.Height = newHeight;
+            SourceImage.Width = newWidth; // resize width
+            SourceImage.Height = newHeight; // resize height
 
             Canvas.SetLeft(SourceImage, Canvas.GetLeft(SourceImage) - offsetX);
             Canvas.SetTop(SourceImage, Canvas.GetTop(SourceImage) - offsetY);
         }
         
-        private void CenterImage(FrameworkElement img)
+        private void CenterImage(FrameworkElement img) // why no work in InitCanvas?
         {
-            Canvas.SetLeft(img, Canvas.ActualWidth/2 - img.Width/2);
-            Canvas.SetTop(img, Canvas.ActualHeight/2 - img.Height/2);
+            Canvas.SetLeft(img, Canvas.ActualWidth/2 - img.ActualWidth/2);
+            Canvas.SetTop(img, Canvas.ActualHeight/2 - img.ActualHeight/2);
         }
     }
 }
