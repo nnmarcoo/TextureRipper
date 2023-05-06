@@ -23,7 +23,6 @@
       <Resource Include="Images\file.png" />
       <Resource Include="Images\sep.png" />
       <Resource Include="Images\reset.png" />
-      <None Remove="Fonts\LouisGeorgeCafe.ttf" />
       <Resource Include="Fonts\LouisGeorgeCafe.ttf" />
     </ItemGroup>
 
