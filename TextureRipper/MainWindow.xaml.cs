@@ -16,7 +16,7 @@ namespace TextureRipper
     {
         private string? _filename;
         private Point _dragMouseOrigin;
-        private int points;
+        //private int points;
 
         public MainWindow()
         {
@@ -115,18 +115,17 @@ namespace TextureRipper
 
         private void PanImage(object sender, MouseEventArgs e)
         {
-            const int safezone = 100;
+            const int margin = 100;
 
             if (e.RightButton == MouseButtonState.Pressed)
                 DragDrop.DoDragDrop(SourceImage, SourceImage, DragDropEffects.Move);
 
-            if (Canvas.GetLeft(SourceImage) > Canvas.ActualWidth-safezone        ||
-                SourceImage.ActualWidth + Canvas.GetLeft(SourceImage) < safezone ||
-                Canvas.GetTop(SourceImage) > Canvas.ActualHeight-safezone        ||
-                SourceImage.ActualHeight + Canvas.GetTop(SourceImage) < safezone  )
+            if (Canvas.GetLeft(SourceImage) > Canvas.ActualWidth-margin        ||
+                SourceImage.ActualWidth + Canvas.GetLeft(SourceImage) < margin ||
+                Canvas.GetTop(SourceImage) > Canvas.ActualHeight-margin        ||
+                SourceImage.ActualHeight + Canvas.GetTop(SourceImage) < margin  )
                 
                 CenterImage(SourceImage);
-   
         }
 
         private void Canvas_OnDragOver(object sender, DragEventArgs e)
