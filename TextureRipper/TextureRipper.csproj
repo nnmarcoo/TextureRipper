@@ -22,8 +22,9 @@
       <Resource Include="Images\save.png" />
       <Resource Include="Images\file.png" />
       <Resource Include="Images\sep.png" />
-      <None Remove="Fonts\Roboto-Thin.ttf" />
-      <Resource Include="Fonts\Roboto-Thin.ttf" />
+      <Resource Include="Images\reset.png" />
+      <None Remove="Fonts\LouisGeorgeCafe.ttf" />
+      <Resource Include="Fonts\LouisGeorgeCafe.ttf" />
     </ItemGroup>
 
 </Project>

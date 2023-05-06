@@ -16,6 +16,7 @@ namespace TextureRipper
     {
         private string? _filename;
         private Point _dragMouseOrigin;
+        private int points;
 
         public MainWindow()
         {
@@ -55,9 +56,14 @@ namespace TextureRipper
             Application.Current.Shutdown();
         }
 
-        private void LineButtonClick(object sender, RoutedEventArgs e)
+        private void ResetButtonClick(object sender, RoutedEventArgs e)
         {
-            
+            if (_filename == null) return;
+            _filename = null;
+            CenterImage(SourceImage);
+            SourceImage.Source = new BitmapImage();
+            FileImage.Visibility = Visibility.Visible;
+            FileText.Visibility = Visibility.Visible;
         }
 
         private void GridButtonClick(object sender, RoutedEventArgs e)
@@ -100,7 +106,6 @@ namespace TextureRipper
             Canvas.SetLeft(SourceImage, Window.ActualWidth/2 - newImage.Width/2); // center width
             Canvas.SetTop(SourceImage, Window.ActualHeight/2 - newImage.Height/2); // center height
             SourceImage.SetValue(RenderOptions.BitmapScalingModeProperty, BitmapScalingMode.NearestNeighbor);
-
         }
 
         private void PanSourceImageDown(object sender, MouseButtonEventArgs e) 
@@ -111,10 +116,10 @@ namespace TextureRipper
         private void PanImage(object sender, MouseEventArgs e)
         {
             const int safezone = 100;
-            
+
             if (e.RightButton == MouseButtonState.Pressed)
                 DragDrop.DoDragDrop(SourceImage, SourceImage, DragDropEffects.Move);
-            
+
             if (Canvas.GetLeft(SourceImage) > Canvas.ActualWidth-safezone        ||
                 SourceImage.ActualWidth + Canvas.GetLeft(SourceImage) < safezone ||
                 Canvas.GetTop(SourceImage) > Canvas.ActualHeight-safezone        ||

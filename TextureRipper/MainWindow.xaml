@@ -11,7 +11,44 @@
         Background="#23272a"
         AllowsTransparency="True"
         x:Name="Window">
-       
+    
+    <Window.Resources>
+        <FontFamily x:Key="Font" >/Fonts/#Louis George Cafe</FontFamily>
+        <Style TargetType="Button">
+            <Setter Property="Background" Value="#2c2f33" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="BorderBrush" Value="#7289da" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="10" />
+            <Setter Property="FontFamily" Value="Segoe UI" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Button}">
+                        <Grid>
+                            <Border x:Name="ButtonBorder" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="5" />
+                            <ContentPresenter x:Name="ButtonContent" Content="{TemplateBinding Content}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ButtonBorder" Property="Background" Value="#7289da" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="ButtonBorder" Property="Background" Value="#7289da" />
+                                <Setter TargetName="ButtonContent" Property="RenderTransform" >
+                                    <Setter.Value>
+                                        <TranslateTransform Y="1" />
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+    
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="40"/>
@@ -19,11 +56,25 @@
         </Grid.RowDefinitions>
         
         <Border Grid.Row="1"
+                x:Name="CanvasGrid"
+                BorderBrush="#7289da"
+                BorderThickness="2"
                 Background="#23272a" 
                 Drop="ImageDrop"
                 AllowDrop="True">
             <Grid>
+                <Rectangle Width="1280" Height="800">
+                    <Rectangle.Fill>
+                        <DrawingBrush TileMode="Tile" Viewport="0,0,32,32" ViewportUnits="Absolute">
+                            <DrawingBrush.Drawing>
+                                <GeometryDrawing Geometry="M0,0 H1 V1 H2 V2 H1 V1 H0Z" Brush="#25292d"/>
+                            </DrawingBrush.Drawing>
+                        </DrawingBrush>
+                    </Rectangle.Fill>
+                </Rectangle>
+                
                 <Canvas Background="Transparent"
+                        ClipToBounds="True"
                         AllowDrop="True"
                         x:Name="Canvas"
                         MouseRightButtonDown="PanSourceImageDown"
@@ -51,7 +102,8 @@
                        HorizontalAlignment="Center"
                        VerticalAlignment="Center"
                        Foreground="Azure"
-                       FontFamily="Calibri"
+                       FontFamily="{StaticResource Font}"
+                       FontSize="16"
                        Margin="0,130,0,0"
                        MouseLeftButtonUp="FileButtonUp"/>
             </Grid>
@@ -102,11 +154,12 @@
                     Height="30"
                     Background="Transparent"
                     BorderThickness="0"
-                    Click="LineButtonClick">
-                    <Image Source="Images/line.png"/>
+                    Click="ResetButtonClick">
+                    <Image Source="Images/reset.png"/>
                 </Button>
                 
                 <Button
+            
                     Grid.Column="3"
                     HorizontalAlignment="Right"
                     VerticalAlignment="Center"
