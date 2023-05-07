@@ -11,7 +11,8 @@
         Background="#23272a"
         AllowsTransparency="True"
         x:Name="Window"
-        Closing="MainWindowClosing">
+        Closing="MainWindowClosing"
+        PreviewKeyDown="MainWindow_OnPreviewKeyDown">
     
     <Window.Resources>
         <FontFamily x:Key="Font" >/Fonts/#Louis George Cafe</FontFamily>

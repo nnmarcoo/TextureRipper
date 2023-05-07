@@ -20,6 +20,7 @@ namespace TextureRipper
     /// </summary>
     public partial class MainWindow
     {
+        //private Cursor _dragPoint = new Cursor();
         private string? _filename;
         private Point _dragMouseOrigin; // for panning
         private bool _isDraggingPoint;
@@ -77,8 +78,6 @@ namespace TextureRipper
         private void GridButtonClick(object sender, RoutedEventArgs e)
         {
             //if (_filename == null) return;
-            
-            
         }
 
         private void SaveButtonClick(object sender, RoutedEventArgs e)
@@ -101,7 +100,6 @@ namespace TextureRipper
                 _filename = files[0];
                 InitializeCanvas();
             }
-            //MessageBox.Show(_filename);
         }
 
         private void InitializeCanvas()
@@ -256,20 +254,33 @@ namespace TextureRipper
             }
             else // Create a new rectangle element
             {
-                Rectangle rect = new Rectangle();
-                rect.Width = 20;
-                rect.Height = 20;
-                rect.StrokeThickness = 1;
-                rect.Stroke = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#f04747"));
-                rect.Fill = new SolidColorBrush(Color.FromArgb(90, 114, 137, 218));
+                Rectangle point = new Rectangle();
+                point.Width = 30;
+                point.Height = 30;
+                point.StrokeThickness = 1;
+                point.Stroke = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#f04747"));
+                point.Fill = new SolidColorBrush(Color.FromArgb(64, 114, 137, 218));
 
                 // Set the position of the rectangle to the position of the mouse
-                Canvas.SetLeft(rect, e.GetPosition(Canvas).X - rect.Width / 2);
-                Canvas.SetTop(rect, e.GetPosition(Canvas).Y - rect.Height / 2);
+                Canvas.SetLeft(point, e.GetPosition(Canvas).X);
+                Canvas.SetTop(point, e.GetPosition(Canvas).Y);
+                
+                point.MouseEnter += PointMouseEnter;
+                point.MouseLeave += PointMouseLeave;
 
                 // Add the rectangle to the canvas
-                Canvas.Children.Add(rect);
+                Canvas.Children.Add(point);
             }
+        }
+        
+        private void PointMouseEnter(object sender, MouseEventArgs e)
+        {
+            Mouse.OverrideCursor = Cursors.SizeAll;
+        }
+
+        private void PointMouseLeave(object sender, MouseEventArgs e)
+        {
+            Mouse.OverrideCursor = null;
         }
         
         private void DeleteAllPoints()
@@ -291,6 +302,16 @@ namespace TextureRipper
             if (!_isDraggingPoint) return;
             _isDraggingPoint = false;
             _selectedPoint?.ReleaseMouseCapture();
+        }
+
+        private void MainWindow_OnPreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Z && Keyboard.Modifiers == ModifierKeys.Control) // undo
+            {
+                var rectangles = Canvas.Children.OfType<Rectangle>().ToList();
+                if (rectangles.Count > 0)
+                    Canvas.Children.Remove(rectangles.Last());
+            }
         }
     }
 }
