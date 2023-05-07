@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -156,13 +157,10 @@ namespace TextureRipper
                     
                     CenterImage(SourceImage);
 
-                    foreach (UIElement point in Canvas.Children)
+                    foreach (var point in Canvas.Children.OfType<Rectangle>())
                     {
-                        if (point is Rectangle)
-                        {
-                            Canvas.SetLeft(point, Canvas.GetLeft(point) + (Canvas.GetLeft(SourceImage) - prevX));
-                            Canvas.SetTop(point, Canvas.GetTop(point) + (Canvas.GetTop(SourceImage) - prevY));
-                        }
+                        Canvas.SetLeft(point, Canvas.GetLeft(point) + (Canvas.GetLeft(SourceImage) - prevX));
+                        Canvas.SetTop(point, Canvas.GetTop(point) + (Canvas.GetTop(SourceImage) - prevY));
                     }
                 }
             }
@@ -177,13 +175,10 @@ namespace TextureRipper
             Canvas.SetTop(SourceImage, Canvas.GetTop(SourceImage) + (dropPosition.Y - _dragMouseOrigin.Y));
             
             //translate points
-            foreach (var item in Canvas.Children)
+            foreach (var point in Canvas.Children.OfType<Rectangle>())
             {
-                if (item is Rectangle point)
-                {
-                    Canvas.SetLeft(point, Canvas.GetLeft(point) + (dropPosition.X - _dragMouseOrigin.X));
-                    Canvas.SetTop(point, Canvas.GetTop(point) + (dropPosition.Y - _dragMouseOrigin.Y));
-                }
+                Canvas.SetLeft(point, Canvas.GetLeft(point) + (dropPosition.X - _dragMouseOrigin.X));
+                Canvas.SetTop(point, Canvas.GetTop(point) + (dropPosition.Y - _dragMouseOrigin.Y));
             }
             _dragMouseOrigin = dropPosition;
         }
@@ -193,9 +188,9 @@ namespace TextureRipper
             if (_filename == null) return;
             if ((SourceImage.ActualWidth * (e.Delta < 0 ? 0.7 : 1.3)) > (4 * ActualWidth) || 
                 (SourceImage.ActualWidth * (e.Delta < 0 ? 0.7 : 1.3)) < (0.25 * ActualWidth)) return;
-            
+
             var zoom = e.Delta < 0 ? 0.7 : 1.3;
-            
+
             double newWidth = SourceImage.ActualWidth * zoom; // new width after zoom
             double newHeight = SourceImage.ActualHeight * zoom; // new height after zoom
 
@@ -212,12 +207,19 @@ namespace TextureRipper
             Canvas.SetLeft(SourceImage, Canvas.GetLeft(SourceImage) - offsetX);
             Canvas.SetTop(SourceImage, Canvas.GetTop(SourceImage) - offsetY);
 
-            foreach (UIElement point in Canvas.Children) // points don't scale with zoom properly
-            {
-                if (point is Rectangle)
-                {
-                    
-                }
+            foreach (var point in Canvas.Children.OfType<Rectangle>()) // apply the same transformation to the points
+            {                                                                  //  reusing variables
+                newWidth = point.ActualWidth * zoom; // new width after zoom
+                newHeight = point.ActualHeight * zoom; // new height after zoom
+
+                dWidth = newWidth - point.ActualWidth; // difference between new width and old width
+                dHeight = newHeight - point.ActualHeight; // difference between new height and old height
+
+                offsetX = e.GetPosition(point).X * dWidth / point.ActualWidth;
+                offsetY = e.GetPosition(point).Y * dHeight / point.ActualHeight;
+
+                Canvas.SetLeft(point, Canvas.GetLeft(point) - offsetX );
+                Canvas.SetTop(point, Canvas.GetTop(point) - offsetY);
             }
         }
         
@@ -259,7 +261,7 @@ namespace TextureRipper
                 rect.Height = 20;
                 rect.StrokeThickness = 1;
                 rect.Stroke = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#f04747"));
-                rect.Fill = new SolidColorBrush(Color.FromArgb(64, 114, 137, 218));
+                rect.Fill = new SolidColorBrush(Color.FromArgb(90, 114, 137, 218));
 
                 // Set the position of the rectangle to the position of the mouse
                 Canvas.SetLeft(rect, e.GetPosition(Canvas).X - rect.Width / 2);
