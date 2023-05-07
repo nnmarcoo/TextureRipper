@@ -10,10 +10,12 @@
         ResizeMode="NoResize"
         Background="#23272a"
         AllowsTransparency="True"
-        x:Name="Window">
+        x:Name="Window"
+        Closing="MainWindowClosing">
     
     <Window.Resources>
         <FontFamily x:Key="Font" >/Fonts/#Louis George Cafe</FontFamily>
+        
         <Style TargetType="Button">
             <Setter Property="Background" Value="#2c2f33" />
             <Setter Property="Foreground" Value="White" />
@@ -47,6 +49,13 @@
                 </Setter.Value>
             </Setter>
         </Style>
+        
+        <Storyboard x:Key="ShutdownAnimation">
+            <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                             From="1.0" To="0.0"
+                             Duration="0:0:1" />
+        </Storyboard>
+        
     </Window.Resources>
     
     <Grid>
@@ -77,15 +86,17 @@
                         ClipToBounds="True"
                         AllowDrop="True"
                         x:Name="Canvas"
-                        MouseRightButtonDown="PanSourceImageDown"
-                        MouseMove="PanImage"
-                        DragOver="Canvas_OnDragOver"
+                        MouseRightButtonDown="CanvasMouseRightButtonDown"
+                        MouseLeftButtonDown="ManipulatePoint"
+                        MouseLeftButtonUp="DragPoint"
+                        MouseMove="CanvasMouseMove"
+                        DragOver="CanvasOnDragOver"
                         MouseWheel="ZoomImage">
                     
                     <Image
                         x:Name="SourceImage"
-                        MouseRightButtonDown="PanSourceImageDown"
-                        MouseMove="PanImage"/>
+                        MouseRightButtonDown="CanvasMouseRightButtonDown"
+                        MouseMove="CanvasMouseMove"/>
                 </Canvas>
                 
                 <Image Source="images/file.png"
@@ -105,6 +116,17 @@
                        FontSize="16"
                        Margin="0,130,0,0"
                        MouseLeftButtonUp="FileButtonUp"/>
+                
+                <TextBlock Text=""
+                           x:Name="Info"
+                           Background="Transparent"
+                           HorizontalAlignment="Left"
+                           VerticalAlignment="Top"
+                           Foreground="Azure"
+                           FontFamily="{StaticResource Font}"
+                           FontSize="16"
+                           Margin="8,8,0,0"
+                           />
             </Grid>
         </Border>
         
