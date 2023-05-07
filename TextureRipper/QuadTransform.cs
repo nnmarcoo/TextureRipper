@@ -1,13 +1,13 @@
-﻿namespace TextureRipper;
+﻿using System.Drawing;
+
+namespace TextureRipper;
 
 public class QuadTransform
 {
-    private double[] src;
-    private double[] dst;
+    private Point[] src;
 
-    public QuadTransform(double[] src, double[] dst)
+    public QuadTransform(Point[] src)
     {
         this.src = src;
-        this.dst = dst;
     }
 }

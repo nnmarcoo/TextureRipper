@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -23,15 +22,31 @@ namespace TextureRipper
         //private Cursor _dragPoint = new Cursor();
         private string? _filename;
         private Point _dragMouseOrigin; // for panning
+        private Point _lastMousePosition; // for dragging point
         private bool _isDraggingPoint;
         private Rectangle? _selectedPoint;
-        private Point _lastMousePosition; // for dragging point
 
         public MainWindow()
         {
             InitializeComponent();
         }
+        
+        private void InitializeCanvas()
+        {
+            FileImage.Visibility = Visibility.Collapsed; // hide file image icon
+            FileText.Visibility = Visibility.Collapsed;  // hide file text
+            
+            var filePath = new Uri(_filename!); // make Uri for new file
+            var newImage = new BitmapImage(filePath); // make bitmap for new image
+            
+            SourceImage.Source = newImage; // set the new bitmap to the source image
 
+            Canvas.SetLeft(SourceImage, Window.ActualWidth/2 - newImage.Width/2); // center width
+            Canvas.SetTop(SourceImage, Window.ActualHeight/2 - newImage.Height/2); // center height
+            SourceImage.SetValue(RenderOptions.BitmapScalingModeProperty, BitmapScalingMode.NearestNeighbor);
+        }
+        
+        //BUTTONS
         private void FileButtonUp(object sender, MouseButtonEventArgs e)
         {
             // Create OpenFileDialog
@@ -51,19 +66,7 @@ namespace TextureRipper
                 InitializeCanvas();
             }
         }
-
-        private void DragWindow(object sender, MouseButtonEventArgs e)
-        {
-            if (e.LeftButton == MouseButtonState.Pressed)
-                DragMove();
-        }
-
-        private void ExitButtonClick(object sender, RoutedEventArgs e)
-        {
-            //Application.Current.Shutdown();
-            Window.Close();
-        }
-
+        
         private void ResetButtonClick(object sender, RoutedEventArgs e)
         {
             if (_filename == null) return;
@@ -73,24 +76,38 @@ namespace TextureRipper
             FileImage.Visibility = Visibility.Visible;
             FileText.Visibility = Visibility.Visible;
             DeleteAllPoints();
+            DisplayWarnings();
         }
-
+        
         private void GridButtonClick(object sender, RoutedEventArgs e)
         {
             //if (_filename == null) return;
         }
-
+        
+        private void ExitButtonClick(object sender, RoutedEventArgs e)
+        {
+            //Application.Current.Shutdown();
+            Window.Close();
+        }
+        
         private void SaveButtonClick(object sender, RoutedEventArgs e)
         {
             
         }
         
+
+        private void DragWindow(object sender, MouseButtonEventArgs e)
+        {
+            if (e.LeftButton == MouseButtonState.Pressed)
+                DragMove();
+        }
+
         private void ImageDrop(object sender, DragEventArgs e)
         {
             if (_filename != null) return;
             if (!e.Data.GetDataPresent(DataFormats.FileDrop)) return;
             
-            string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
+            string[] files = (string[])e.Data.GetData(DataFormats.FileDrop); // why is this warning
                 
             if (Path.GetExtension(files[0]).Equals(".png")  ||
                 Path.GetExtension(files[0]).Equals(".jpeg") ||
@@ -100,21 +117,6 @@ namespace TextureRipper
                 _filename = files[0];
                 InitializeCanvas();
             }
-        }
-
-        private void InitializeCanvas()
-        {
-            FileImage.Visibility = Visibility.Collapsed; // hide file image icon
-            FileText.Visibility = Visibility.Collapsed;  // hide file text
-            
-            var filePath = new Uri(_filename!); // make Uri for new file
-            var newImage = new BitmapImage(filePath); // make bitmap for new image
-            
-            SourceImage.Source = newImage; // set the new bitmap to the source image
-
-            Canvas.SetLeft(SourceImage, Window.ActualWidth/2 - newImage.Width/2); // center width
-            Canvas.SetTop(SourceImage, Window.ActualHeight/2 - newImage.Height/2); // center height
-            SourceImage.SetValue(RenderOptions.BitmapScalingModeProperty, BitmapScalingMode.NearestNeighbor);
         }
 
         private void CanvasMouseRightButtonDown(object sender, MouseButtonEventArgs e) 
@@ -179,6 +181,8 @@ namespace TextureRipper
                 Canvas.SetTop(point, Canvas.GetTop(point) + (dropPosition.Y - _dragMouseOrigin.Y));
             }
             _dragMouseOrigin = dropPosition;
+
+            DisplayWarnings();
         }
 
         private void ZoomImage(object sender, MouseWheelEventArgs e)
@@ -189,37 +193,37 @@ namespace TextureRipper
 
             var zoom = e.Delta < 0 ? 0.7 : 1.3;
 
-            double newWidth = SourceImage.ActualWidth * zoom; // new width after zoom
-            double newHeight = SourceImage.ActualHeight * zoom; // new height after zoom
+            ApplyZoom(SourceImage, zoom, e);
 
-            double dWidth = newWidth - SourceImage.ActualWidth; // difference between new width and old width
-            double dHeight = newHeight - SourceImage.ActualHeight; // difference between new height and old height
-
-            double offsetX = e.GetPosition(SourceImage).X * dWidth / SourceImage.ActualWidth;
-            double offsetY = e.GetPosition(SourceImage).Y * dHeight / SourceImage.ActualHeight;
-
-            SourceImage.Width = newWidth; // resize width
-            SourceImage.Height = newHeight; // resize height
-
-            //translate image
-            Canvas.SetLeft(SourceImage, Canvas.GetLeft(SourceImage) - offsetX);
-            Canvas.SetTop(SourceImage, Canvas.GetTop(SourceImage) - offsetY);
-
-            foreach (var point in Canvas.Children.OfType<Rectangle>()) // apply the same transformation to the points
-            {                                                                  //  reusing variables
-                newWidth = point.ActualWidth * zoom; // new width after zoom
-                newHeight = point.ActualHeight * zoom; // new height after zoom
-
-                dWidth = newWidth - point.ActualWidth; // difference between new width and old width
-                dHeight = newHeight - point.ActualHeight; // difference between new height and old height
-
-                offsetX = e.GetPosition(point).X * dWidth / point.ActualWidth;
-                offsetY = e.GetPosition(point).Y * dHeight / point.ActualHeight;
-
-                Canvas.SetLeft(point, Canvas.GetLeft(point) - offsetX );
-                Canvas.SetTop(point, Canvas.GetTop(point) - offsetY);
+            foreach (var point in Canvas.Children.OfType<Rectangle>())
+            {
+                ApplyZoom(point, zoom, e);
             }
+            DisplayWarnings();
         }
+
+        private void ApplyZoom(FrameworkElement element, double zoom, MouseWheelEventArgs e)
+        {
+            double newWidth = element.ActualWidth * zoom; // new width after zoom
+            double newHeight = element.ActualHeight * zoom; // new height after zoom
+
+            double dWidth = newWidth - element.ActualWidth; // difference between new width and old width
+            double dHeight = newHeight - element.ActualHeight; // difference between new height and old height
+
+            double offsetX = e.GetPosition(element).X * dWidth / element.ActualWidth;
+            double offsetY = e.GetPosition(element).Y * dHeight / element.ActualHeight;
+
+            if (element is not Rectangle)
+            {
+                element.Width = newWidth; // resize width
+                element.Height = newHeight; // resize height
+            }
+
+            //translate element
+            Canvas.SetLeft(element, Canvas.GetLeft(element) - offsetX);
+            Canvas.SetTop(element, Canvas.GetTop(element) - offsetY);
+        }
+
         
         private void CenterImage(FrameworkElement img)
         {
@@ -244,7 +248,7 @@ namespace TextureRipper
         private void ManipulatePoint(object sender, MouseButtonEventArgs e)
         {
             if (_filename == null) return;
-            
+
             if (e.OriginalSource is Rectangle) // if clicking on a rectangle
             {
                 _selectedPoint = e.OriginalSource as Rectangle;
@@ -270,6 +274,7 @@ namespace TextureRipper
 
                 // Add the rectangle to the canvas
                 Canvas.Children.Add(point);
+                DisplayWarnings();
             }
         }
         
@@ -300,6 +305,7 @@ namespace TextureRipper
         private void DragPoint(object sender, MouseButtonEventArgs e)
         {
             if (!_isDraggingPoint) return;
+            DisplayWarnings();
             _isDraggingPoint = false;
             _selectedPoint?.ReleaseMouseCapture();
         }
@@ -308,10 +314,64 @@ namespace TextureRipper
         {
             if (e.Key == Key.Z && Keyboard.Modifiers == ModifierKeys.Control) // undo
             {
-                var rectangles = Canvas.Children.OfType<Rectangle>().ToList();
-                if (rectangles.Count > 0)
-                    Canvas.Children.Remove(rectangles.Last());
+                var points = Canvas.Children.OfType<Rectangle>().ToList();
+                if (points.Count > 0)
+                    Canvas.Children.Remove(points.Last());
             }
+        }
+        
+        
+        //WARNING
+        private int CountMissingPoints()
+        {
+            return Canvas.Children.OfType<Rectangle>().Count(point => 
+                Canvas.GetLeft(point) > Canvas.ActualWidth || 
+                Canvas.GetLeft(point) < 0 || 
+                Canvas.GetTop(point) > Canvas.ActualHeight || 
+                Canvas.GetTop(point) < 0);
+        }
+
+        private string MissingPointsFormat()
+        {
+            int missingPoints = CountMissingPoints();
+            if (missingPoints == 0) return "";
+            if (missingPoints == 1) return "Warning: 1 point outside of work area\n";
+            return "Warning: " + missingPoints + " points outside of work area\n";
+        }
+
+        private bool IsOverLapping()
+        {
+            return false; //implement
+        }
+
+        private string OverLappingFormat()
+        {
+            return IsOverLapping() ? "Warning: Overlapping points\n" : "";
+        }
+
+        private int InvalidNumPoints()
+        {
+            return Canvas.Children.OfType<Rectangle>().Count() % 4;
+        }
+
+        private string InvaludNumPointsFormat()
+        {
+            int invalidPoints = InvalidNumPoints();
+            if (invalidPoints == 0) return "";
+            if (invalidPoints == 1) return "Warning: 1 disjointed point\n";
+            return "Warning: " + invalidPoints + " disjointed points\n";
+        }
+
+
+        private void DisplayWarnings()
+        {
+            var warning = "";
+
+            warning += MissingPointsFormat();
+            warning += OverLappingFormat();
+            warning += InvaludNumPointsFormat();
+            
+            Info.Text = warning;
         }
     }
 }

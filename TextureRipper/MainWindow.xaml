@@ -123,7 +123,7 @@
                            Background="Transparent"
                            HorizontalAlignment="Left"
                            VerticalAlignment="Top"
-                           Foreground="Azure"
+                           Foreground="#f1c40f"
                            FontFamily="{StaticResource Font}"
                            FontSize="16"
                            Margin="8,8,0,0"
