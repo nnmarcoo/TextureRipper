@@ -25,6 +25,7 @@ namespace TextureRipper
         private Point _lastMousePosition; // for dragging point
         private bool _isDraggingPoint;
         private Rectangle? _selectedPoint;
+        private string? _debug;
 
         public MainWindow()
         {
@@ -76,14 +77,10 @@ namespace TextureRipper
             FileImage.Visibility = Visibility.Visible;
             FileText.Visibility = Visibility.Visible;
             DeleteAllPoints();
+            DeleteAllLines();
             DisplayWarnings();
         }
-        
-        private void GridButtonClick(object sender, RoutedEventArgs e)
-        {
-            //if (_filename == null) return;
-        }
-        
+
         private void ExitButtonClick(object sender, RoutedEventArgs e)
         {
             //Application.Current.Shutdown();
@@ -164,6 +161,8 @@ namespace TextureRipper
                     }
                 }
             }
+            DrawQuads();
+            DisplayWarnings();
         }
 
         private void CanvasOnDragOver(object sender, DragEventArgs e)
@@ -182,6 +181,7 @@ namespace TextureRipper
             }
             _dragMouseOrigin = dropPosition;
 
+            DrawQuads();
             DisplayWarnings();
         }
 
@@ -193,12 +193,11 @@ namespace TextureRipper
 
             var zoom = e.Delta < 0 ? 0.7 : 1.3;
 
-            ApplyZoom(SourceImage, zoom, e);
-
-            foreach (var point in Canvas.Children.OfType<Rectangle>())
+            foreach (FrameworkElement element in Canvas.Children) //Canvas.Children.OfType<Rectangle>()
             {
-                ApplyZoom(point, zoom, e);
+                ApplyZoom(element, zoom, e);
             }
+            DrawQuads();
             DisplayWarnings();
         }
 
@@ -231,19 +230,7 @@ namespace TextureRipper
             Canvas.SetTop(img, Canvas.ActualHeight/2 - img.ActualHeight/2);
         }
         
-        private void MainWindowClosing(object sender, System.ComponentModel.CancelEventArgs e)
-        {
-            // Create the animation for opacity
-            DoubleAnimation opacityAnimation = new DoubleAnimation();
-            opacityAnimation.From = 1.0;
-            opacityAnimation.To = 0.0;
-            opacityAnimation.Duration = new Duration(TimeSpan.FromSeconds(.2));
-            opacityAnimation.Completed += (_, _) => Application.Current.Shutdown();
-
-            // Trigger the animation
-            e.Cancel = true;
-            this.BeginAnimation(UIElement.OpacityProperty, opacityAnimation);
-        }
+        
 
         private void ManipulatePoint(object sender, MouseButtonEventArgs e)
         {
@@ -274,31 +261,8 @@ namespace TextureRipper
 
                 // Add the rectangle to the canvas
                 Canvas.Children.Add(point);
+                DrawQuads();
                 DisplayWarnings();
-            }
-        }
-        
-        private void PointMouseEnter(object sender, MouseEventArgs e)
-        {
-            Mouse.OverrideCursor = Cursors.SizeAll;
-        }
-
-        private void PointMouseLeave(object sender, MouseEventArgs e)
-        {
-            Mouse.OverrideCursor = null;
-        }
-        
-        private void DeleteAllPoints()
-        {
-            // Loop through all children of the canvas
-            for (var i = Canvas.Children.Count - 1; i >= 0; i--)
-            {
-                // Check if the child is a rectangle
-                if (Canvas.Children[i] is Rectangle)
-                {
-                    // Remove the rectangle from the canvas
-                    Canvas.Children.RemoveAt(i);
-                }
             }
         }
 
@@ -310,14 +274,63 @@ namespace TextureRipper
             _selectedPoint?.ReleaseMouseCapture();
         }
 
-        private void MainWindow_OnPreviewKeyDown(object sender, KeyEventArgs e)
+        private void DrawQuad(Point p1, Point p2, Point p3, Point p4) // broken
         {
-            if (e.Key == Key.Z && Keyboard.Modifiers == ModifierKeys.Control) // undo
+            var points = QuadTransform.OrderPointsClockwise(p1, p2, p3, p4);
+            Line? side;
+            
+            
+            for (int i = 0; i < points.Length-1; i++) // draw 3 sides
             {
-                var points = Canvas.Children.OfType<Rectangle>().ToList();
-                if (points.Count > 0)
-                    Canvas.Children.Remove(points.Last());
+                side = new Line();
+                side.Stroke = new SolidColorBrush(Color.FromArgb(255, 255, 0, 0));
+                side.X1 = points[i].X; 
+                side.Y1 = points[i].Y;
+                side.X2 = points[i+1].X;
+                side.Y2 = points[i+1].Y;
+                side.StrokeThickness = 2;
+                side.StrokeDashArray = new DoubleCollection() { 3, 1 };
+                Canvas.Children.Add(side);
             }
+
+            side = new Line(); // connect quad
+            side.Stroke = new SolidColorBrush(Color.FromArgb(255, 255, 0, 0));
+            side.X1 = points[3].X; 
+            side.Y1 = points[3].Y;
+            side.X2 = points[0].X;
+            side.Y2 = points[0].Y;
+            side.StrokeThickness = 2;
+            side.StrokeDashArray = new DoubleCollection() { 3, 1 };
+            Canvas.Children.Add(side);
+        }
+
+        private void DrawQuads()
+        {
+            if (Canvas.Children.OfType<Rectangle>().Count() < 4) return;
+            DeleteAllLines();
+            
+            var points = Canvas.Children.OfType<Rectangle>().ToList();
+
+            for (int i = 0; i < points.Count; i += 4)
+            {
+                if (i + 3 >= points.Count) // Not enough points for a complete quad
+                    break;
+                
+                DrawQuad(new Point(Canvas.GetLeft(points[i]), Canvas.GetTop(points[i])),
+                    new Point(Canvas.GetLeft(points[i + 1]), Canvas.GetTop(points[i + 1])),
+                    new Point(Canvas.GetLeft(points[i + 2]), Canvas.GetTop(points[i + 2])),
+                    new Point(Canvas.GetLeft(points[i + 3]), Canvas.GetTop(points[i + 3])));
+            }
+        }
+        
+        private void PointMouseEnter(object sender, MouseEventArgs e)
+        {
+            Mouse.OverrideCursor = Cursors.SizeAll;
+        }
+
+        private void PointMouseLeave(object sender, MouseEventArgs e)
+        {
+            Mouse.OverrideCursor = null;
         }
         
         
@@ -333,20 +346,32 @@ namespace TextureRipper
 
         private string MissingPointsFormat()
         {
-            int missingPoints = CountMissingPoints();
+            var missingPoints = CountMissingPoints();
             if (missingPoints == 0) return "";
             if (missingPoints == 1) return "Warning: 1 point outside of work area\n";
             return "Warning: " + missingPoints + " points outside of work area\n";
         }
 
-        private bool IsOverLapping()
+        private bool HasCollinearQuad()
         {
-            return false; //implement
-        }
+            if (Canvas.Children.OfType<Rectangle>().Count() < 4) return false;
 
-        private string OverLappingFormat()
-        {
-            return IsOverLapping() ? "Warning: Overlapping points\n" : "";
+            var points = Canvas.Children.OfType<Rectangle>().ToList();
+
+            for (int i = 0; i < points.Count; i += 4)
+            {
+                if (i + 3 >= points.Count) // Not enough points for a complete quad
+                    break;
+
+                if ((Canvas.GetLeft(points[i]).Equals(Canvas.GetLeft(points[i+1])) &&
+                    Canvas.GetLeft(points[i]).Equals(Canvas.GetLeft(points[i+2])) &&
+                    Canvas.GetLeft(points[i]).Equals(Canvas.GetLeft(points[i+3]))) ||
+                    Canvas.GetTop(points[i]).Equals(Canvas.GetTop(points[i+1])) &&
+                    Canvas.GetTop(points[i]).Equals(Canvas.GetTop(points[i+2])) &&
+                    Canvas.GetTop(points[i]).Equals(Canvas.GetTop(points[i+3])))
+                    return true;
+            }
+            return false;
         }
 
         private int InvalidNumPoints()
@@ -354,24 +379,93 @@ namespace TextureRipper
             return Canvas.Children.OfType<Rectangle>().Count() % 4;
         }
 
-        private string InvaludNumPointsFormat()
+        private string InvalidNumPointsFormat()
         {
-            int invalidPoints = InvalidNumPoints();
+            var invalidPoints = InvalidNumPoints();
             if (invalidPoints == 0) return "";
             if (invalidPoints == 1) return "Warning: 1 disjointed point\n";
             return "Warning: " + invalidPoints + " disjointed points\n";
         }
-
+        
+        private string CollinearQuadFormat()
+        {
+            return HasCollinearQuad() ? "Warning: Collinear quad\n" : "";
+        }
 
         private void DisplayWarnings()
         {
             var warning = "";
 
             warning += MissingPointsFormat();
-            warning += OverLappingFormat();
-            warning += InvaludNumPointsFormat();
-            
+            warning += CollinearQuadFormat();
+            warning += InvalidNumPointsFormat();
+
             Info.Text = warning;
+        }
+
+
+        //MODIFY
+        private void DeleteAllPoints()
+        {
+            // Loop through all children of the canvas
+            for (var i = Canvas.Children.Count - 1; i >= 0; i--)
+            {
+                // Check if the child is a rectangle
+                if (Canvas.Children[i] is Rectangle)
+                {
+                    // Remove the rectangle from the canvas
+                    Canvas.Children.RemoveAt(i);
+                }
+            }
+        }
+        
+        private void DeleteAllLines()
+        {
+            // Loop through all children of the canvas
+            for (var i = Canvas.Children.Count - 1; i >= 0; i--)
+            {
+                // Check if the child is a rectangle
+                if (Canvas.Children[i] is Line)
+                {
+                    // Remove the rectangle from the canvas
+                    Canvas.Children.RemoveAt(i);
+                }
+            }
+        }
+        
+        
+        //WINDOW CONTROL
+        private void MainWindow_OnPreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Z && Keyboard.Modifiers == ModifierKeys.Control) // undo
+            {
+                var points = Canvas.Children.OfType<Rectangle>().ToList();
+                if (points.Count > 0)
+                {
+                    DeleteAllLines();
+                    Canvas.Children.Remove(points.Last());
+                    DrawQuads();
+                }
+            }
+        }
+        
+        private void MainWindowClosing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            // Create the animation for opacity
+            DoubleAnimation opacityAnimation = new DoubleAnimation();
+            opacityAnimation.From = 1.0;
+            opacityAnimation.To = 0.0;
+            opacityAnimation.Duration = new Duration(TimeSpan.FromSeconds(.2));
+            opacityAnimation.Completed += (_, _) => Application.Current.Shutdown();
+
+            // Trigger the animation
+            e.Cancel = true;
+            this.BeginAnimation(UIElement.OpacityProperty, opacityAnimation);
+        }
+
+        private void ControlsButtonClick(object sender, RoutedEventArgs e)
+        {
+           
         }
     }
 }

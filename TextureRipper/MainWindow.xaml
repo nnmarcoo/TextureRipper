@@ -164,8 +164,11 @@
                     Height="30"
                     Background="Transparent"
                     BorderThickness="0"
-                    Click="GridButtonClick">
-                    <Image Source="Images/grid.png"/>
+                    Click="ControlsButtonClick">
+                    <TextBlock Text="?"
+                               Foreground="#99aab5"
+                               FontFamily="{StaticResource Font}"
+                               FontSize="30"/>
                 </Button>
                 
                 <Button

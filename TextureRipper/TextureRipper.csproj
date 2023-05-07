@@ -24,7 +24,6 @@
       <Resource Include="Images\sep.png" />
       <Resource Include="Images\reset.png" />
       <Resource Include="Fonts\LouisGeorgeCafe.ttf" />
-      <None Remove="Images\drag.cur" />
       <Resource Include="Images\drag.cur" />
     </ItemGroup>
 
