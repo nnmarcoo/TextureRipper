@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Windows;
@@ -15,41 +13,38 @@ using ColorConverter = System.Windows.Media.ColorConverter;
 using Path = System.IO.Path;
 using Point = System.Windows.Point;
 
-namespace TextureRipper //todo array of lines so don't have to instantiate every time
+namespace TextureRipper
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
     public partial class MainWindow
     {
-        private string? _filename;
+        private BitmapImage? _file;
         private Point _dragMouseOrigin; // for panning
         private Point _lastMousePosition; // for dragging point
         private bool _isDraggingPoint;
         private Rectangle? _selectedPoint;
         private readonly SolidColorBrush _lineStroke = new SolidColorBrush(Color.FromArgb(255, 255, 0, 0)); // refactored to avoid SOH
         private readonly DoubleCollection _strokeDashArray = new DoubleCollection() { 3, 1 }; // refactored to avoid SOH
-        private ArrayList? lines; // array of lines
-                                  // each time 2 points are added, make new line
-                                  // only move them around on transform, not recreate
 
         public MainWindow()
         {
             InitializeComponent();
         }
         
-        private void InitializeCanvas()
+        private void InitializeCanvas(string filename)
         {
             FileImage.Visibility = Visibility.Collapsed; // hide file image icon
             FileText.Visibility = Visibility.Collapsed;  // hide file text
             
-            var filePath = new Uri(_filename!); // make Uri for new file
-            var newImage = new BitmapImage(filePath); // make bitmap for new image
-            
-            SourceImage.Source = newImage; // set the new bitmap to the source image
+            _file = new BitmapImage(new Uri(filename)); // make Uri for new file
 
-            Canvas.SetLeft(SourceImage, Window.ActualWidth/2 - newImage.Width/2); // center width
-            Canvas.SetTop(SourceImage, Window.ActualHeight/2 - newImage.Height/2); // center height
+            SourceImage.Source = _file; // set the new bitmap to the source image
+
+            Canvas.SetLeft(SourceImage, Window.ActualWidth/2 - _file.Width/2); // center | can't use CenterImage() because SourceImage 
+            Canvas.SetTop(SourceImage, Window.ActualHeight/2 - _file.Height/2); //       | hasn't been loaded yet, somehow
+            
             SourceImage.SetValue(RenderOptions.BitmapScalingModeProperty, BitmapScalingMode.NearestNeighbor);
         }
         
@@ -68,20 +63,20 @@ namespace TextureRipper //todo array of lines so don't have to instantiate every
 
             if (result != true) return;
             if (!openFileDialog.FileName.Equals(""))
-            {
-                _filename = openFileDialog.FileName;
-                InitializeCanvas();
-            }
+                InitializeCanvas(openFileDialog.FileName);
         }
         
         private void ResetButtonClick(object sender, RoutedEventArgs e)
         {
-            if (_filename == null) return;
-            _filename = null;
-            CenterImage(SourceImage);
-            SourceImage.Source = new BitmapImage();
+            if (_file == null) return;
+            
+            
+            _file = null;
+            SourceImage.Source = null;
+            
             FileImage.Visibility = Visibility.Visible;
             FileText.Visibility = Visibility.Visible;
+            
             DeleteAllPoints();
             DeleteAllLines();
             DisplayWarnings();
@@ -107,7 +102,7 @@ namespace TextureRipper //todo array of lines so don't have to instantiate every
 
         private void ImageDrop(object sender, DragEventArgs e)
         {
-            if (_filename != null) return;
+            if (_file != null) return;
             if (!e.Data.GetDataPresent(DataFormats.FileDrop)) return;
             
             string[] files = (string[])e.Data.GetData(DataFormats.FileDrop); // why is this warning
@@ -119,10 +114,7 @@ namespace TextureRipper //todo array of lines so don't have to instantiate every
                 Path.GetExtension(files[0]).Equals(".tif")  ||
                 Path.GetExtension(files[0]).Equals(".ico")  ||
                 Path.GetExtension(files[0]).Equals(".jpe")   )
-            {
-                _filename = files[0];
-                InitializeCanvas();
-            }
+                InitializeCanvas(files[0]);
         }
 
         private void CanvasMouseRightButtonDown(object sender, MouseButtonEventArgs e) 
@@ -197,7 +189,7 @@ namespace TextureRipper //todo array of lines so don't have to instantiate every
 
         private void ZoomImage(object sender, MouseWheelEventArgs e)
         {
-            if (_filename == null) return;
+            if (_file == null) return;
             if ((SourceImage.ActualWidth * (e.Delta < 0 ? 0.7 : 1.3)) > (4 * ActualWidth) || 
                 (SourceImage.ActualWidth * (e.Delta < 0 ? 0.7 : 1.3)) < (0.1 * ActualWidth)) return;
 
@@ -242,23 +234,25 @@ namespace TextureRipper //todo array of lines so don't have to instantiate every
         
         private void ManipulatePoint(object sender, MouseButtonEventArgs e)
         {
-            if (_filename == null) return;
+            if (_file == null) return;
 
-            if (e.OriginalSource is Rectangle) // if clicking on a rectangle
+            if (e.OriginalSource is Rectangle source) // if clicking on a rectangle
             {
-                _selectedPoint = e.OriginalSource as Rectangle;
+                _selectedPoint = source;
                 _lastMousePosition = e.GetPosition(Canvas);
                 _isDraggingPoint = true;
                 _selectedPoint?.CaptureMouse();
             }
             else // Create a new rectangle element
             {
-                Rectangle point = new Rectangle();
-                point.Width = 30;
-                point.Height = 30;
-                point.StrokeThickness = 1;
-                point.Stroke = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#f04747"));
-                point.Fill = new SolidColorBrush(Color.FromArgb(64, 114, 137, 218));
+                Rectangle point = new Rectangle
+                {
+                    Width = 30,
+                    Height = 30,
+                    StrokeThickness = 1,
+                    Stroke = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#f04747")),
+                    Fill = new SolidColorBrush(Color.FromArgb(64, 114, 137, 218))
+                };
 
                 // Set the position of the rectangle to the position of the mouse
                 Canvas.SetLeft(point, e.GetPosition(Canvas).X);
@@ -282,8 +276,8 @@ namespace TextureRipper //todo array of lines so don't have to instantiate every
             _selectedPoint?.ReleaseMouseCapture();
         }
 
-        private void DrawQuad(Point p1, Point p2, Point p3, Point p4) // todo refractor with Quad object so that new lines don't need to be created
-        {
+        private void DrawQuad(Point p1, Point p2, Point p3, Point p4) // todo refactor such that new lines don't need to be created if they already exist
+        {                                                             // ( points[] - (points[] % 4) ) can be SET, while the rest are redrawn !!! :D
             var points = Quad.OrderPointsClockwise(p1, p2, p3, p4);
             Line? side;
 
@@ -297,31 +291,35 @@ namespace TextureRipper //todo array of lines so don't have to instantiate every
 
             for (int i = 0; i < points.Length-1; i++) // draw 3 sides
             {
-                side = new Line();
+                side = new Line
+                {
+                    Stroke = _lineStroke,
+                    X1 = points[i].X,
+                    Y1 = points[i].Y,
+                    X2 = points[i+1].X,
+                    Y2 = points[i+1].Y,
+                    StrokeThickness = 2,
+                    StrokeDashArray = _strokeDashArray
+                };
 
-                side.Stroke = _lineStroke;
-                side.X1 = points[i].X; 
-                side.Y1 = points[i].Y;
-                side.X2 = points[i+1].X;
-                side.Y2 = points[i+1].Y;
-                side.StrokeThickness = 2;
-                side.StrokeDashArray = _strokeDashArray;
                 Canvas.Children.Add(side);
             }
 
-            side = new Line(); // connect quad
-            side.Stroke = _lineStroke;
-            side.X1 = points[3].X; 
-            side.Y1 = points[3].Y;
-            side.X2 = points[0].X;
-            side.Y2 = points[0].Y;
-            side.StrokeThickness = 2;
-            side.StrokeDashArray = _strokeDashArray;
+            side = new Line
+            {
+                Stroke = _lineStroke,
+                X1 = points[3].X,
+                Y1 = points[3].Y,
+                X2 = points[0].X,
+                Y2 = points[0].Y,
+                StrokeThickness = 2,
+                StrokeDashArray = _strokeDashArray
+            }; // connect quad
             Canvas.Children.Add(side);
         }
 
-        private void DrawQuads() // todo: draw grid in quads if not mem issue
-        {
+        private void DrawQuads() // todo refactor such that new lines don't need to be created if they already exist
+        {                        // ( points[] - (points[] % 4) ) can be SET, while the rest are redrawn !!!
             if (Canvas.Children.OfType<Rectangle>().Count() < 4) return; // if there are less than 4 points
             DeleteAllLines();
             
@@ -425,12 +423,8 @@ namespace TextureRipper //todo array of lines so don't have to instantiate every
         //MODIFY
         private void DeleteAllPoints()
         {
-            List<UIElement> pointsToRemove = new List<UIElement>();
-            
-            foreach (var point in Canvas.Children.OfType<Rectangle>()) // convert to linq? etc.
-            {
-                pointsToRemove.Add(point);
-            }
+            var pointsToRemove = Canvas.Children.OfType<Rectangle>().Cast<UIElement>().ToList();
+
             foreach (var point in pointsToRemove) // refactored to avoid SOH
             {
                 Canvas.Children.Remove(point);
@@ -439,12 +433,8 @@ namespace TextureRipper //todo array of lines so don't have to instantiate every
         
         private void DeleteAllLines()
         {
-            List<UIElement> linesToRemove = new List<UIElement>();
-            
-            foreach (var line in Canvas.Children.OfType<Line>())
-            {
-                linesToRemove.Add(line);
-            }
+            var linesToRemove = Canvas.Children.OfType<Line>().Cast<UIElement>().ToList();
+
             foreach (var line in linesToRemove) // refactored to avoid SOH
             {
                 Canvas.Children.Remove(line);
@@ -471,10 +461,12 @@ namespace TextureRipper //todo array of lines so don't have to instantiate every
         private void MainWindowClosing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             // Create the animation for opacity
-            DoubleAnimation opacityAnimation = new DoubleAnimation();
-            opacityAnimation.From = 1.0;
-            opacityAnimation.To = 0.0;
-            opacityAnimation.Duration = new Duration(TimeSpan.FromSeconds(.2));
+            DoubleAnimation opacityAnimation = new DoubleAnimation
+            {
+                From = 1.0,
+                To = 0.0,
+                Duration = new Duration(TimeSpan.FromSeconds(.2))
+            };
             opacityAnimation.Completed += (_, _) => Application.Current.Shutdown();
 
             // Trigger the animation
