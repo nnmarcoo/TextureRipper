@@ -119,7 +119,7 @@
                        MouseLeftButtonUp="FileButtonUp"/>
                 
                 <TextBlock Text=""
-                           x:Name="Info"
+                           x:Name="Warning"
                            Background="Transparent"
                            HorizontalAlignment="Left"
                            VerticalAlignment="Top"
@@ -128,6 +128,25 @@
                            FontSize="16"
                            Margin="8,8,0,0"
                            />
+                <TextBlock x:Name="Info"
+                           Background="Transparent"
+                           HorizontalAlignment="Left"
+                           VerticalAlignment="Bottom"
+                           Foreground="#2ecc71"
+                           FontFamily="{StaticResource Font}"
+                           FontSize="20"
+                           Margin="8,8,0,0">
+                    <Run Text="C : Toggle Keybinds"/>
+                    <LineBreak/>
+                    <Run Text="Zoom : Scroll"/>
+                    <LineBreak/>
+                    <Run Text="Pan : Left Click Down"/>
+                    <LineBreak/>
+                    <Run Text="Modify Point : Left Click"/>
+                    <LineBreak/>
+                    <Run Text="Undo Point : CTRL + Z"/>
+                </TextBlock>
+                
             </Grid>
         </Border>
         
@@ -137,8 +156,9 @@
             
             <Grid>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="56"/>
-                    <ColumnDefinition Width="46"/>
+                    <ColumnDefinition Width="40"/>
+                    <ColumnDefinition Width="40"/>
+                    <ColumnDefinition Width="1120"/>
                     <ColumnDefinition/>
                     <ColumnDefinition/>
                 </Grid.ColumnDefinitions>
@@ -156,20 +176,9 @@
                     <Image Source="Images/save.png"/>
                 </Button>
                 
-                <Button
-                    Grid.Column="1"
-                    HorizontalAlignment="Left"
-                    VerticalAlignment="Center"
-                    Width="30"
-                    Height="30"
-                    Background="Transparent"
-                    BorderThickness="0"
-                    Click="ControlsButtonClick">
-                    <TextBlock Text="?"
-                               Foreground="#99aab5"
-                               FontFamily="{StaticResource Font}"
-                               FontSize="30"/>
-                </Button>
+                <Image Grid.Column="1" 
+                       Source="Images/sep.png"/>
+               
                 
                 <Button
                     Grid.Column="2"
@@ -185,6 +194,19 @@
                 
                 <Button
                     Grid.Column="3"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Center"
+                    Margin="0,0,8,0"
+                    Width="30"
+                    Height="30"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    Click="InfoButtonClick">
+                    <Image Source="Images/info.png"/>
+                </Button>
+                
+                <Button
+                    Grid.Column="4"
                     HorizontalAlignment="Right"
                     VerticalAlignment="Center"
                     Margin="0,0,8,0"

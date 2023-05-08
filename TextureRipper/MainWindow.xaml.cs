@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -12,20 +15,20 @@ using ColorConverter = System.Windows.Media.ColorConverter;
 using Path = System.IO.Path;
 using Point = System.Windows.Point;
 
-namespace TextureRipper
+namespace TextureRipper //todo array of lines so don't have to instantiate every time
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
     public partial class MainWindow
     {
-        //private Cursor _dragPoint = new Cursor();
         private string? _filename;
         private Point _dragMouseOrigin; // for panning
         private Point _lastMousePosition; // for dragging point
         private bool _isDraggingPoint;
         private Rectangle? _selectedPoint;
-        private string? _debug;
+        private readonly SolidColorBrush _lineStroke = new SolidColorBrush(Color.FromArgb(255, 255, 0, 0)); // refactored to avoid SOH
+        private readonly DoubleCollection _strokeDashArray = new DoubleCollection() { 3, 1 }; // refactored to avoid SOH
 
         public MainWindow()
         {
@@ -54,7 +57,7 @@ namespace TextureRipper
             var openFileDialog = new OpenFileDialog
             {
                 // Set filter for file extension and default file extension
-                Filter = "Image Files (*.jpeg, *.jpg, *.png, *.tiff)|*.jpeg;*.jpg;*.png;*.tiff",
+                Filter = "Image Files (*.jpeg, *.jpg, *.png, *.tiff, *.ico, *.jpe, *.tif)|*.jpeg;*.jpg;*.png;*.tiff;*.ico;*.jpe;*.tif",
                 DefaultExt = ".png"
             };
 
@@ -109,7 +112,10 @@ namespace TextureRipper
             if (Path.GetExtension(files[0]).Equals(".png")  ||
                 Path.GetExtension(files[0]).Equals(".jpeg") ||
                 Path.GetExtension(files[0]).Equals(".jpg")  ||
-                Path.GetExtension(files[0]).Equals(".tiff")  )
+                Path.GetExtension(files[0]).Equals(".tiff") ||
+                Path.GetExtension(files[0]).Equals(".tif")  ||
+                Path.GetExtension(files[0]).Equals(".ico")  ||
+                Path.GetExtension(files[0]).Equals(".jpe")   )
             {
                 _filename = files[0];
                 InitializeCanvas();
@@ -121,6 +127,7 @@ namespace TextureRipper
             _dragMouseOrigin = e.GetPosition(Canvas);// get original position of mouse
         }
 
+        [SuppressMessage("ReSharper.DPA", "DPA0000: DPA issues")]
         private void CanvasMouseMove(object sender, MouseEventArgs e)
         {
             if (_isDraggingPoint && _selectedPoint != null) // if dragging point
@@ -181,7 +188,8 @@ namespace TextureRipper
             }
             _dragMouseOrigin = dropPosition;
 
-            DrawQuads();
+            if (Canvas.Children.OfType<Rectangle>().Count() < 20)
+                DrawQuads();
             DisplayWarnings();
         }
 
@@ -189,7 +197,7 @@ namespace TextureRipper
         {
             if (_filename == null) return;
             if ((SourceImage.ActualWidth * (e.Delta < 0 ? 0.7 : 1.3)) > (4 * ActualWidth) || 
-                (SourceImage.ActualWidth * (e.Delta < 0 ? 0.7 : 1.3)) < (0.25 * ActualWidth)) return;
+                (SourceImage.ActualWidth * (e.Delta < 0 ? 0.7 : 1.3)) < (0.1 * ActualWidth)) return;
 
             var zoom = e.Delta < 0 ? 0.7 : 1.3;
 
@@ -197,7 +205,8 @@ namespace TextureRipper
             {
                 ApplyZoom(element, zoom, e);
             }
-            DrawQuads();
+
+            DrawQuads(); //required
             DisplayWarnings();
         }
 
@@ -222,7 +231,6 @@ namespace TextureRipper
             Canvas.SetLeft(element, Canvas.GetLeft(element) - offsetX);
             Canvas.SetTop(element, Canvas.GetTop(element) - offsetY);
         }
-
         
         private void CenterImage(FrameworkElement img)
         {
@@ -230,8 +238,6 @@ namespace TextureRipper
             Canvas.SetTop(img, Canvas.ActualHeight/2 - img.ActualHeight/2);
         }
         
-        
-
         private void ManipulatePoint(object sender, MouseButtonEventArgs e)
         {
             if (_filename == null) return;
@@ -274,37 +280,37 @@ namespace TextureRipper
             _selectedPoint?.ReleaseMouseCapture();
         }
 
-        private void DrawQuad(Point p1, Point p2, Point p3, Point p4) // broken
+        private void DrawQuad(Point p1, Point p2, Point p3, Point p4) // todo refractor with Quad object so that new lines don't need to be created
         {
-            var points = QuadTransform.OrderPointsClockwise(p1, p2, p3, p4);
+            var points = Quad.OrderPointsClockwise(p1, p2, p3, p4);
             Line? side;
             
             
             for (int i = 0; i < points.Length-1; i++) // draw 3 sides
             {
                 side = new Line();
-                side.Stroke = new SolidColorBrush(Color.FromArgb(255, 255, 0, 0));
+                side.Stroke = _lineStroke;
                 side.X1 = points[i].X; 
                 side.Y1 = points[i].Y;
                 side.X2 = points[i+1].X;
                 side.Y2 = points[i+1].Y;
                 side.StrokeThickness = 2;
-                side.StrokeDashArray = new DoubleCollection() { 3, 1 };
+                side.StrokeDashArray = _strokeDashArray;
                 Canvas.Children.Add(side);
             }
 
             side = new Line(); // connect quad
-            side.Stroke = new SolidColorBrush(Color.FromArgb(255, 255, 0, 0));
+            side.Stroke = _lineStroke;
             side.X1 = points[3].X; 
             side.Y1 = points[3].Y;
             side.X2 = points[0].X;
             side.Y2 = points[0].Y;
             side.StrokeThickness = 2;
-            side.StrokeDashArray = new DoubleCollection() { 3, 1 };
+            side.StrokeDashArray = _strokeDashArray;
             Canvas.Children.Add(side);
         }
 
-        private void DrawQuads()
+        private void DrawQuads() // todo: draw grid in quads if not mem issue
         {
             if (Canvas.Children.OfType<Rectangle>().Count() < 4) return;
             DeleteAllLines();
@@ -313,10 +319,9 @@ namespace TextureRipper
 
             for (int i = 0; i < points.Count; i += 4)
             {
-                if (i + 3 >= points.Count) // Not enough points for a complete quad
-                    break;
-                
-                DrawQuad(new Point(Canvas.GetLeft(points[i]), Canvas.GetTop(points[i])),
+                if (i + 3 >= points.Count) break; // Not enough points for a complete quad
+
+                    DrawQuad(new Point(Canvas.GetLeft(points[i]), Canvas.GetTop(points[i])), //refactor
                     new Point(Canvas.GetLeft(points[i + 1]), Canvas.GetTop(points[i + 1])),
                     new Point(Canvas.GetLeft(points[i + 2]), Canvas.GetTop(points[i + 2])),
                     new Point(Canvas.GetLeft(points[i + 3]), Canvas.GetTop(points[i + 3])));
@@ -396,40 +401,43 @@ namespace TextureRipper
         {
             var warning = "";
 
+            if (Canvas.Children.OfType<Rectangle>().Count() > 19)
+                warning += "Performance mode on\n";
+
             warning += MissingPointsFormat();
             warning += CollinearQuadFormat();
             warning += InvalidNumPointsFormat();
 
-            Info.Text = warning;
+            Warning.Text = warning;
         }
 
 
         //MODIFY
         private void DeleteAllPoints()
         {
-            // Loop through all children of the canvas
-            for (var i = Canvas.Children.Count - 1; i >= 0; i--)
+            List<UIElement> pointsToRemove = new List<UIElement>();
+            
+            foreach (var line in Canvas.Children.OfType<Rectangle>())
             {
-                // Check if the child is a rectangle
-                if (Canvas.Children[i] is Rectangle)
-                {
-                    // Remove the rectangle from the canvas
-                    Canvas.Children.RemoveAt(i);
-                }
+                pointsToRemove.Add(line);
+            }
+            foreach (var line in pointsToRemove) // refactored to avoid SOH
+            {
+                Canvas.Children.Remove(line);
             }
         }
         
         private void DeleteAllLines()
         {
-            // Loop through all children of the canvas
-            for (var i = Canvas.Children.Count - 1; i >= 0; i--)
+            List<UIElement> linesToRemove = new List<UIElement>();
+            
+            foreach (var line in Canvas.Children.OfType<Line>())
             {
-                // Check if the child is a rectangle
-                if (Canvas.Children[i] is Line)
-                {
-                    // Remove the rectangle from the canvas
-                    Canvas.Children.RemoveAt(i);
-                }
+                linesToRemove.Add(line);
+            }
+            foreach (var line in linesToRemove) // refactored to avoid SOH
+            {
+                Canvas.Children.Remove(line);
             }
         }
         
@@ -447,6 +455,7 @@ namespace TextureRipper
                     DrawQuads();
                 }
             }
+            if (e.Key == Key.C) Info.Visibility = Info.IsVisible ? Visibility.Collapsed : Visibility.Visible;
         }
         
         private void MainWindowClosing(object sender, System.ComponentModel.CancelEventArgs e)
@@ -463,9 +472,13 @@ namespace TextureRipper
             this.BeginAnimation(UIElement.OpacityProperty, opacityAnimation);
         }
 
-        private void ControlsButtonClick(object sender, RoutedEventArgs e)
+        private void InfoButtonClick(object sender, RoutedEventArgs e)
         {
-           
+            System.Diagnostics.Process.Start(new ProcessStartInfo
+            {
+                FileName = "https://github.com/nnmarcoo",
+                UseShellExecute = true
+            });
         }
     }
 }

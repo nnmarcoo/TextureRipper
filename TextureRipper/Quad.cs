@@ -1,19 +1,20 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Windows.Media.Imaging;
 using Point = System.Windows.Point;
 
 namespace TextureRipper;
 
-public class QuadTransform
+public class Quad
 {
-    private Point[] src;
+    private Point[] _points;
+    private BitmapImage _image;
 
-    public QuadTransform(Point[] src)
+    public Quad(Point[] points, BitmapImage image)
     {
-        this.src = src;
+        _points = OrderPointsClockwise(points[0], points[1], points[2], points[3]); //todo
+        _image = image;
     }
-    
+
     public static Point[] OrderPointsClockwise(Point p1, Point p2, Point p3, Point p4)
     {
         // Create an array of the input points
@@ -38,9 +39,6 @@ public class QuadTransform
             double angleB = Math.Atan2(b.Y - center.Y, b.X - center.X);
             return angleA.CompareTo(angleB);
         });
-
         return points;
     }
-
-
 }
