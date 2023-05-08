@@ -1,7 +1,7 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -29,6 +29,9 @@ namespace TextureRipper //todo array of lines so don't have to instantiate every
         private Rectangle? _selectedPoint;
         private readonly SolidColorBrush _lineStroke = new SolidColorBrush(Color.FromArgb(255, 255, 0, 0)); // refactored to avoid SOH
         private readonly DoubleCollection _strokeDashArray = new DoubleCollection() { 3, 1 }; // refactored to avoid SOH
+        private ArrayList? lines; // array of lines
+                                  // each time 2 points are added, make new line
+                                  // only move them around on transform, not recreate
 
         public MainWindow()
         {
@@ -126,8 +129,7 @@ namespace TextureRipper //todo array of lines so don't have to instantiate every
         {
             _dragMouseOrigin = e.GetPosition(Canvas);// get original position of mouse
         }
-
-        [SuppressMessage("ReSharper.DPA", "DPA0000: DPA issues")]
+        
         private void CanvasMouseMove(object sender, MouseEventArgs e)
         {
             if (_isDraggingPoint && _selectedPoint != null) // if dragging point
@@ -284,11 +286,19 @@ namespace TextureRipper //todo array of lines so don't have to instantiate every
         {
             var points = Quad.OrderPointsClockwise(p1, p2, p3, p4);
             Line? side;
-            
-            
+
+            foreach (var point in Canvas.Children.OfType<Rectangle>())
+            {
+                foreach (var line in Canvas.Children.OfType<Line>())
+                {
+                    //find line if it exists
+                }
+            }
+
             for (int i = 0; i < points.Length-1; i++) // draw 3 sides
             {
                 side = new Line();
+
                 side.Stroke = _lineStroke;
                 side.X1 = points[i].X; 
                 side.Y1 = points[i].Y;
@@ -312,7 +322,7 @@ namespace TextureRipper //todo array of lines so don't have to instantiate every
 
         private void DrawQuads() // todo: draw grid in quads if not mem issue
         {
-            if (Canvas.Children.OfType<Rectangle>().Count() < 4) return;
+            if (Canvas.Children.OfType<Rectangle>().Count() < 4) return; // if there are less than 4 points
             DeleteAllLines();
             
             var points = Canvas.Children.OfType<Rectangle>().ToList();
@@ -417,13 +427,13 @@ namespace TextureRipper //todo array of lines so don't have to instantiate every
         {
             List<UIElement> pointsToRemove = new List<UIElement>();
             
-            foreach (var line in Canvas.Children.OfType<Rectangle>())
+            foreach (var point in Canvas.Children.OfType<Rectangle>()) // convert to linq? etc.
             {
-                pointsToRemove.Add(line);
+                pointsToRemove.Add(point);
             }
-            foreach (var line in pointsToRemove) // refactored to avoid SOH
+            foreach (var point in pointsToRemove) // refactored to avoid SOH
             {
-                Canvas.Children.Remove(line);
+                Canvas.Children.Remove(point);
             }
         }
         
@@ -474,7 +484,7 @@ namespace TextureRipper //todo array of lines so don't have to instantiate every
 
         private void InfoButtonClick(object sender, RoutedEventArgs e)
         {
-            System.Diagnostics.Process.Start(new ProcessStartInfo
+            Process.Start(new ProcessStartInfo
             {
                 FileName = "https://github.com/nnmarcoo",
                 UseShellExecute = true

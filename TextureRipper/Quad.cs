@@ -4,6 +4,12 @@ using Point = System.Windows.Point;
 
 namespace TextureRipper;
 
+
+/*todo
+ 1. calculate arbitrary rectangle to translate to
+ 
+ */
+
 public class Quad
 {
     private Point[] _points;

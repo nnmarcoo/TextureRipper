@@ -12,7 +12,8 @@
         AllowsTransparency="True"
         x:Name="Window"
         Closing="MainWindowClosing"
-        PreviewKeyDown="MainWindow_OnPreviewKeyDown">
+        PreviewKeyDown="MainWindow_OnPreviewKeyDown"
+        Icon="Images/icon.ico">
     
     <Window.Resources>
         <FontFamily x:Key="Font" >/Fonts/#Louis George Cafe</FontFamily>
