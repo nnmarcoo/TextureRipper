@@ -27,6 +27,7 @@ namespace TextureRipper
         private Rectangle? _selectedPoint;
         private readonly SolidColorBrush _lineStroke = new SolidColorBrush(Color.FromArgb(255, 255, 0, 0)); // refactored to avoid SOH
         private readonly DoubleCollection _strokeDashArray = new DoubleCollection() { 3, 1 }; // refactored to avoid SOH
+        private int _pointMultiple;
 
         public MainWindow()
         {
@@ -197,7 +198,8 @@ namespace TextureRipper
 
             foreach (FrameworkElement element in Canvas.Children) //Canvas.Children.OfType<Rectangle>()
             {
-                ApplyZoom(element, zoom, e);
+                if (element is not Line) // line transformations are handing by DrawQuads() because they are parented to points
+                    ApplyZoom(element, zoom, e);
             }
 
             DrawQuads(); //required
@@ -243,9 +245,17 @@ namespace TextureRipper
                 _isDraggingPoint = true;
                 _selectedPoint?.CaptureMouse();
             }
-            else // Create a new rectangle element
+            else
             {
-                Rectangle point = new Rectangle
+                Line line = new Line // Create a new line element
+                    {
+                        Stroke = _lineStroke,
+                        StrokeThickness = 2,
+                        StrokeDashArray = _strokeDashArray
+                    };
+                    Canvas.Children.Add(line);
+
+                Rectangle point = new Rectangle // Create a new rectangle element
                 {
                     Width = 30,
                     Height = 30,
@@ -263,7 +273,7 @@ namespace TextureRipper
 
                 // Add the rectangle to the canvas
                 Canvas.Children.Add(point);
-                DrawQuads();
+                //DrawQuads();
                 DisplayWarnings();
             }
         }
@@ -276,63 +286,44 @@ namespace TextureRipper
             _selectedPoint?.ReleaseMouseCapture();
         }
 
-        private void DrawQuad(Point p1, Point p2, Point p3, Point p4) // todo refactor such that new lines don't need to be created if they already exist
-        {                                                             // ( points[] - (points[] % 4) ) can be SET, while the rest are redrawn !!! :D
-            var points = Quad.OrderPointsClockwise(p1, p2, p3, p4);
-            Line? side;
-
-            foreach (var point in Canvas.Children.OfType<Rectangle>())
-            {
-                foreach (var line in Canvas.Children.OfType<Line>())
-                {
-                    //find line if it exists
-                }
-            }
-
-            for (int i = 0; i < points.Length-1; i++) // draw 3 sides
-            {
-                side = new Line
-                {
-                    Stroke = _lineStroke,
-                    X1 = points[i].X,
-                    Y1 = points[i].Y,
-                    X2 = points[i+1].X,
-                    Y2 = points[i+1].Y,
-                    StrokeThickness = 2,
-                    StrokeDashArray = _strokeDashArray
-                };
-
-                Canvas.Children.Add(side);
-            }
-
-            side = new Line
-            {
-                Stroke = _lineStroke,
-                X1 = points[3].X,
-                Y1 = points[3].Y,
-                X2 = points[0].X,
-                Y2 = points[0].Y,
-                StrokeThickness = 2,
-                StrokeDashArray = _strokeDashArray
-            }; // connect quad
-            Canvas.Children.Add(side);
-        }
-
         private void DrawQuads() // todo refactor such that new lines don't need to be created if they already exist
         {                        // ( points[] - (points[] % 4) ) can be SET, while the rest are redrawn !!!
+                                 // every 2 points, make a line
+                                 // only set line pos
             if (Canvas.Children.OfType<Rectangle>().Count() < 4) return; // if there are less than 4 points
-            DeleteAllLines();
+            //DeleteAllLines();
             
             var points = Canvas.Children.OfType<Rectangle>().ToList();
+            var lines = Canvas.Children.OfType<Line>().ToList();
 
             for (int i = 0; i < points.Count; i += 4)
             {
                 if (i + 3 >= points.Count) break; // Not enough points for a complete quad
-
-                    DrawQuad(new Point(Canvas.GetLeft(points[i]), Canvas.GetTop(points[i])), //refactor
+                var quad = Quad.OrderPointsClockwise(
+                    new Point(Canvas.GetLeft(points[i]), Canvas.GetTop(points[i])),
                     new Point(Canvas.GetLeft(points[i + 1]), Canvas.GetTop(points[i + 1])),
-                    new Point(Canvas.GetLeft(points[i + 2]), Canvas.GetTop(points[i + 2])),
+                    new Point(Canvas.GetLeft(points[i + 2]), Canvas.GetTop(points[i + 2])), 
                     new Point(Canvas.GetLeft(points[i + 3]), Canvas.GetTop(points[i + 3])));
+
+                lines[i].X1 = quad[0].X; // set first line of quad
+                lines[i].Y1 = quad[0].Y;
+                lines[i].X2 = quad[1].X;
+                lines[i].Y2 = quad[1].Y;
+                
+                lines[i+1].X1 = quad[1].X; // set second line of quad
+                lines[i+1].Y1 = quad[1].Y;
+                lines[i+1].X2 = quad[2].X;
+                lines[i+1].Y2 = quad[2].Y;
+                
+                lines[i+2].X1 = quad[2].X; // set third line of quad
+                lines[i+2].Y1 = quad[2].Y;
+                lines[i+2].X2 = quad[3].X;
+                lines[i+2].Y2 = quad[3].Y;
+                
+                lines[i+3].X1 = quad[3].X; // set third line of quad
+                lines[i+3].Y1 = quad[3].Y;
+                lines[i+3].X2 = quad[0].X;
+                lines[i+3].Y2 = quad[0].Y;
             }
         }
         
@@ -347,7 +338,7 @@ namespace TextureRipper
         }
         
         
-        //WARNING
+        //WARNINGS
         private int CountMissingPoints()
         {
             return Canvas.Children.OfType<Rectangle>().Count(point => 
@@ -407,7 +398,7 @@ namespace TextureRipper
 
         private void DisplayWarnings()
         {
-            var warning = "";
+            var warning = "Points: " + Canvas.Children.OfType<Rectangle>().Count() + "\n";
 
             if (Canvas.Children.OfType<Rectangle>().Count() > 19)
                 warning += "Performance mode on\n";
@@ -448,14 +439,16 @@ namespace TextureRipper
             if (e.Key == Key.Z && Keyboard.Modifiers == ModifierKeys.Control) // undo
             {
                 var points = Canvas.Children.OfType<Rectangle>().ToList();
+                var lines = Canvas.Children.OfType<Line>().ToList();
                 if (points.Count > 0)
                 {
-                    DeleteAllLines();
                     Canvas.Children.Remove(points.Last());
+                    Canvas.Children.Remove(lines.Last());
                     DrawQuads();
                 }
             }
             if (e.Key == Key.C) Info.Visibility = Info.IsVisible ? Visibility.Collapsed : Visibility.Visible;
+            DisplayWarnings();
         }
         
         private void MainWindowClosing(object sender, System.ComponentModel.CancelEventArgs e)
