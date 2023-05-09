@@ -17,14 +17,14 @@ public class Quad
 
     public Quad(Point[] points, BitmapImage image)
     {
-        _points = OrderPointsClockwise(points[0], points[1], points[2], points[3]); //todo
+        _points = OrderPointsClockwise(points); //todo
         _image = image;
     }
 
-    public static Point[] OrderPointsClockwise(Point p1, Point p2, Point p3, Point p4)
+    public static Point[] OrderPointsClockwise(Point[] points)
     {
         // Create an array of the input points
-        Point[] points = { p1, p2, p3, p4 };
+        //Point[] points = { p1, p2, p3, p4 };
 
         // Find the center point of the given points
         double cx = 0;

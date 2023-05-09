@@ -286,46 +286,36 @@ namespace TextureRipper
             _selectedPoint?.ReleaseMouseCapture();
         }
 
-        private void DrawQuads() // todo refactor such that new lines don't need to be created if they already exist
-        {                        // ( points[] - (points[] % 4) ) can be SET, while the rest are redrawn !!!
-                                 // every 2 points, make a line
-                                 // only set line pos
-            if (Canvas.Children.OfType<Rectangle>().Count() < 4) return; // if there are less than 4 points
-            //DeleteAllLines();
-            
+        private void DrawQuads()
+        {                        
+            if (Canvas.Children.OfType<Rectangle>().Count() < 4) return;
+
             var points = Canvas.Children.OfType<Rectangle>().ToList();
             var lines = Canvas.Children.OfType<Line>().ToList();
 
             for (int i = 0; i < points.Count; i += 4)
             {
-                if (i + 3 >= points.Count) break; // Not enough points for a complete quad
-                var quad = Quad.OrderPointsClockwise(
+                if (i + 3 >= points.Count) break;
+
+                var quad = Quad.OrderPointsClockwise( new[] {
                     new Point(Canvas.GetLeft(points[i]), Canvas.GetTop(points[i])),
                     new Point(Canvas.GetLeft(points[i + 1]), Canvas.GetTop(points[i + 1])),
-                    new Point(Canvas.GetLeft(points[i + 2]), Canvas.GetTop(points[i + 2])), 
-                    new Point(Canvas.GetLeft(points[i + 3]), Canvas.GetTop(points[i + 3])));
+                    new Point(Canvas.GetLeft(points[i + 2]), Canvas.GetTop(points[i + 2])),
+                    new Point(Canvas.GetLeft(points[i + 3]), Canvas.GetTop(points[i + 3]))
+                });
 
-                lines[i].X1 = quad[0].X; // set first line of quad
-                lines[i].Y1 = quad[0].Y;
-                lines[i].X2 = quad[1].X;
-                lines[i].Y2 = quad[1].Y;
-                
-                lines[i+1].X1 = quad[1].X; // set second line of quad
-                lines[i+1].Y1 = quad[1].Y;
-                lines[i+1].X2 = quad[2].X;
-                lines[i+1].Y2 = quad[2].Y;
-                
-                lines[i+2].X1 = quad[2].X; // set third line of quad
-                lines[i+2].Y1 = quad[2].Y;
-                lines[i+2].X2 = quad[3].X;
-                lines[i+2].Y2 = quad[3].Y;
-                
-                lines[i+3].X1 = quad[3].X; // set third line of quad
-                lines[i+3].Y1 = quad[3].Y;
-                lines[i+3].X2 = quad[0].X;
-                lines[i+3].Y2 = quad[0].Y;
+                for (int j = 0; j < 4; j++)
+                {
+                    int lineIndex = i + j;
+
+                    lines[lineIndex].X1 = quad[j].X;
+                    lines[lineIndex].Y1 = quad[j].Y;
+                    lines[lineIndex].X2 = quad[(j + 1) % 4].X;
+                    lines[lineIndex].Y2 = quad[(j + 1) % 4].Y;
+                }
             }
         }
+
         
         private void PointMouseEnter(object sender, MouseEventArgs e)
         {
@@ -398,7 +388,7 @@ namespace TextureRipper
 
         private void DisplayWarnings()
         {
-            var warning = "Points: " + Canvas.Children.OfType<Rectangle>().Count() + "\n";
+            var warning = "";
 
             if (Canvas.Children.OfType<Rectangle>().Count() > 19)
                 warning += "Performance mode on\n";
