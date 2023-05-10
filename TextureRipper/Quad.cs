@@ -1,31 +1,12 @@
 ﻿using System;
-using System.Windows.Media.Imaging;
 using Point = System.Windows.Point;
 
 namespace TextureRipper;
 
-
-/*todo
- 1. calculate arbitrary rectangle to translate to
- 
- */
-
-public class Quad
+public static class Quad
 {
-    private Point[] _points;
-    private BitmapImage _image;
-
-    public Quad(Point[] points, BitmapImage image)
-    {
-        _points = OrderPointsClockwise(points); //todo
-        _image = image;
-    }
-
     public static Point[] OrderPointsClockwise(Point[] points)
     {
-        // Create an array of the input points
-        //Point[] points = { p1, p2, p3, p4 };
-
         // Find the center point of the given points
         double cx = 0;
         double cy = 0;
@@ -46,5 +27,42 @@ public class Quad
             return angleA.CompareTo(angleB);
         });
         return points;
+    }
+
+    public static Point CalcRect(Point[] points) // calculate rectangle to map the points to
+    {                                            // returns (width, height)
+        Point size = new Point();
+        Point topLeft = points[0];
+        Point topRight = points[0];
+        Point bottomLeft = points[0];
+        Point bottomRight = points[0];
+
+        const double tolerance = 0.0001;
+
+        foreach (Point corner in points) {
+            if (corner.X < topLeft.X - tolerance || (Math.Abs(corner.X - topLeft.X) < tolerance && corner.Y < topLeft.Y - tolerance)) {
+                topLeft = corner;
+            }
+            if (corner.X > topRight.X + tolerance || (Math.Abs(corner.X - topRight.X) < tolerance && corner.Y < topRight.Y - tolerance)) {
+                topRight = corner;
+            }
+            if (corner.X < bottomLeft.X - tolerance || (Math.Abs(corner.X - bottomLeft.X) < tolerance && corner.Y > bottomLeft.Y + tolerance)) {
+                bottomLeft = corner;
+            }
+            if (corner.X > bottomRight.X + tolerance || (Math.Abs(corner.X - bottomRight.X) < tolerance && corner.Y > bottomRight.Y + tolerance)) {
+                bottomRight = corner;
+            }
+        }
+        
+        var topLineLength = Math.Sqrt(Math.Pow(topRight.X - topLeft.X, 2) + Math.Pow(topRight.Y - topLeft.Y, 2));
+        var bottomLineLength = Math.Sqrt(Math.Pow(bottomRight.X - bottomLeft.X, 2) + Math.Pow(bottomRight.Y - bottomLeft.Y, 2));
+        
+        var leftSideLength = Math.Sqrt(Math.Pow(topLeft.X - bottomLeft.X, 2) + Math.Pow(topLeft.Y - bottomLeft.Y, 2));
+        var rightSideLength = Math.Sqrt(Math.Pow(topRight.X - bottomRight.X, 2) + Math.Pow(topRight.Y - bottomRight.Y, 2));
+
+        size.X = topLineLength > bottomLineLength ? bottomLineLength : topLineLength;
+        size.Y = leftSideLength > rightSideLength ? rightSideLength : leftSideLength;
+
+        return size;
     }
 }

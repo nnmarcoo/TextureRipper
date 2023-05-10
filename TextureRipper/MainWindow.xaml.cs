@@ -27,7 +27,6 @@ namespace TextureRipper
         private Rectangle? _selectedPoint;
         private readonly SolidColorBrush _lineStroke = new SolidColorBrush(Color.FromArgb(255, 255, 0, 0)); // refactored to avoid SOH
         private readonly DoubleCollection _strokeDashArray = new DoubleCollection() { 3, 1 }; // refactored to avoid SOH
-        private int _pointMultiple;
 
         public MainWindow()
         {
@@ -248,15 +247,16 @@ namespace TextureRipper
             else
             {
                 Line line = new Line // Create a new line element
-                    {
-                        Stroke = _lineStroke,
-                        StrokeThickness = 2,
-                        StrokeDashArray = _strokeDashArray
-                    };
-                    Canvas.Children.Add(line);
+                {
+                    Stroke = _lineStroke,
+                    StrokeThickness = 2,
+                    StrokeDashArray = _strokeDashArray
+                };
+                Canvas.Children.Add(line);
 
                 Rectangle point = new Rectangle // Create a new rectangle element
                 {
+                    
                     Width = 30,
                     Height = 30,
                     StrokeThickness = 1,
@@ -286,7 +286,7 @@ namespace TextureRipper
             _selectedPoint?.ReleaseMouseCapture();
         }
 
-        private void DrawQuads()
+        private void DrawQuads() // todo fix bug: when UNDO called, incorrect lines deleted / not turned off
         {                        
             if (Canvas.Children.OfType<Rectangle>().Count() < 4) return;
 
