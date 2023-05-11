@@ -31,7 +31,6 @@ public static class Quad
 
     public static Point CalcRect(Point[] points) // calculate rectangle to map the points to
     {                                            // returns (width, height)
-        Point size = new Point();
         Point topLeft = points[0];
         Point topRight = points[0];
         Point bottomLeft = points[0];
@@ -60,9 +59,25 @@ public static class Quad
         var leftSideLength = Math.Sqrt(Math.Pow(topLeft.X - bottomLeft.X, 2) + Math.Pow(topLeft.Y - bottomLeft.Y, 2));
         var rightSideLength = Math.Sqrt(Math.Pow(topRight.X - bottomRight.X, 2) + Math.Pow(topRight.Y - bottomRight.Y, 2));
 
-        size.X = topLineLength > bottomLineLength ? bottomLineLength : topLineLength;
-        size.Y = leftSideLength > rightSideLength ? rightSideLength : leftSideLength;
+        bottomRight.X = topLineLength > bottomLineLength ? bottomLineLength : topLineLength; // overwrite bottomRight
+        bottomRight.Y = leftSideLength > rightSideLength ? rightSideLength : leftSideLength; // to save memory
 
-        return size;
+        return bottomRight;
+    }
+
+    public static double[][] CalcHomography(double[][] from, double[][] to)
+    {
+
+
+
+        return new double[1][];
+    }
+    
+    public static double[][] CalcA(Point[] from, Point[] to)
+    {
+
+
+
+        return new double[1][];
     }
 }
