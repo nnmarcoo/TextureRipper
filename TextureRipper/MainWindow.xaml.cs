@@ -90,8 +90,38 @@ namespace TextureRipper
         
         private void SaveButtonClick(object sender, RoutedEventArgs e)
         {
-            
+
+            Point[] s = new Point[] { new Point(1, 2), new Point(2, 2), new Point(2, 1), new Point(1, 1) };
+            Point[] d = new Point[] { new Point(0, 1), new Point(1, 1), new Point(1, 0), new Point(0, 0) };
+            double[,] A = Quad.CalcA(s, d);
+            double[,] B = Quad.CalcB(d);
+
+            double[,] AInv = Quad.AInverse(A);
+
+            double[,] product = Quad.MatrixMultiply(AInv, B);
+
+            MessageBox.Show(MatrixToString(product));
+
         }
+        
+        public static string MatrixToString(double[,] matrix)
+        {
+            int rows = matrix.GetLength(0);
+            int cols = matrix.GetLength(1);
+            string result = "";
+
+            for (int i = 0; i < rows; i++)
+            {
+                for (int j = 0; j < cols; j++)
+                {
+                    result += matrix[i, j].ToString("0.000").PadLeft(10) + " ";
+                }
+                result += "\n";
+            }
+
+            return result;
+        }
+
         
 
         private void DragWindow(object sender, MouseButtonEventArgs e)
@@ -135,6 +165,7 @@ namespace TextureRipper
                 Canvas.SetTop(_selectedPoint, Canvas.GetTop(_selectedPoint) + deltaY);
 
                 _lastMousePosition = currentPosition;
+                DrawQuads();
             }
             else // if panning image
             {
@@ -162,7 +193,6 @@ namespace TextureRipper
                     }
                 }
             }
-            DrawQuads();
             DisplayWarnings();
         }
 
@@ -273,7 +303,7 @@ namespace TextureRipper
 
                 // Add the rectangle to the canvas
                 Canvas.Children.Add(point);
-                //DrawQuads();
+                DrawQuads();
                 DisplayWarnings();
             }
         }
@@ -293,7 +323,7 @@ namespace TextureRipper
             var points = Canvas.Children.OfType<Rectangle>().ToList();
             var lines = Canvas.Children.OfType<Line>().ToList();
 
-            for (int i = 0; i < points.Count; i += 4)
+            for (var i = 0; i < points.Count; i += 4)
             {
                 if (i + 3 >= points.Count) break;
 
@@ -304,9 +334,9 @@ namespace TextureRipper
                     new Point(Canvas.GetLeft(points[i + 3]), Canvas.GetTop(points[i + 3]))
                 });
 
-                for (int j = 0; j < 4; j++)
+                for (var j = 0; j < 4; j++)
                 {
-                    int lineIndex = i + j;
+                    var lineIndex = i + j;
 
                     lines[lineIndex].X1 = quad[j].X;
                     lines[lineIndex].Y1 = quad[j].Y;
