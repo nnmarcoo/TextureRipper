@@ -53,7 +53,7 @@ public static class Quad
         };
     }
 
-    public static Point CalcRect(Point[] points) // calculate rectangle to map the points to
+    private static Point CalcRect(Point[] points) // calculate rectangle to map the points to
     {                                            // returns (width, height)
         var distances = new int[points.Length - 1];
 
@@ -101,7 +101,7 @@ public static class Quad
         };
     }
 
-    private static double[,] AInverse(double[,] A) // Gauss-Jordan elimination method
+    private static double[,] AInverse(double[,] A) // Gauss-Jordan elimination method todo optimize this
     {
         int n = A.GetLength(0);
         double[,] B = new double[n, 2 * n];
@@ -167,8 +167,8 @@ public static class Quad
         }
         return AInv;
     }
-    
-    public static double[,] MatrixMultiply(double[,] a, double[,] b)
+
+    private static double[,] MatrixMultiply(double[,] a, double[,] b)
     {
         int aRows = a.GetLength(0);
         int aCols = a.GetLength(1);
@@ -186,4 +186,23 @@ public static class Quad
                     result[i, j] += a[i, k] * b[k, j];
         return result;
     }
+    
+    public static string MatrixToString(double[,] matrix)
+    {
+        int rows = matrix.GetLength(0);
+        int cols = matrix.GetLength(1);
+        string result = "";
+
+        for (int i = 0; i < rows; i++)
+        {
+            for (int j = 0; j < cols; j++)
+            {
+                result += matrix[i, j].ToString("0.000").PadLeft(10) + " ";
+            }
+            result += "\n";
+        }
+
+        return result;
+    }
+    
 }

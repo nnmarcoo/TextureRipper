@@ -28,6 +28,8 @@ namespace TextureRipper
         private readonly SolidColorBrush _lineStroke = new SolidColorBrush(Color.FromArgb(255, 255, 0, 0)); // refactored to avoid SOH
         private readonly DoubleCollection _strokeDashArray = new DoubleCollection() { 3, 1 }; // refactored to avoid SOH
 
+        private string? debugH;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -91,32 +93,12 @@ namespace TextureRipper
         private void SaveButtonClick(object sender, RoutedEventArgs e)
         {
 
-            Point[] s = new Point[] { new Point(20, 50), new Point(50, 100), new Point(100, 50), new Point(1, 1) };
-            double[,] test = Quad.CalcHomography(s);
+            //Point[] s = new Point[] { new Point(20, 50), new Point(50, 100), new Point(100, 50), new Point(1, 1) };
+            //double[,] test = Quad.CalcHomography(s);
 
-            MessageBox.Show(MatrixToString(test));
+            //MessageBox.Show(MatrixToString(test));
 
         }
-        
-        public static string MatrixToString(double[,] matrix)
-        {
-            int rows = matrix.GetLength(0);
-            int cols = matrix.GetLength(1);
-            string result = "";
-
-            for (int i = 0; i < rows; i++)
-            {
-                for (int j = 0; j < cols; j++)
-                {
-                    result += matrix[i, j].ToString("0.000").PadLeft(10) + " ";
-                }
-                result += "\n";
-            }
-
-            return result;
-        }
-
-        
 
         private void DragWindow(object sender, MouseButtonEventArgs e)
         {
@@ -329,7 +311,7 @@ namespace TextureRipper
                 });
 
                 double[,] h = Quad.CalcHomography(quad);
-
+                debugH = Quad.MatrixToString(h);
                 //MessageBox.Show(MatrixToString(h));
 
                 for (var j = 0; j < 4; j++)
@@ -416,7 +398,7 @@ namespace TextureRipper
 
         private void DisplayWarnings()
         {
-            var warning = "";
+            var warning = debugH + "\n";
 
             if (Canvas.Children.OfType<Rectangle>().Count() > 19)
                 warning += "Performance mode on\n";
