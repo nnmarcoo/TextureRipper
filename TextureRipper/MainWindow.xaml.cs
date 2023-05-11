@@ -91,16 +91,10 @@ namespace TextureRipper
         private void SaveButtonClick(object sender, RoutedEventArgs e)
         {
 
-            Point[] s = new Point[] { new Point(1, 2), new Point(2, 2), new Point(2, 1), new Point(1, 1) };
-            Point[] d = new Point[] { new Point(0, 1), new Point(1, 1), new Point(1, 0), new Point(0, 0) };
-            double[,] A = Quad.CalcA(s, d);
-            double[,] B = Quad.CalcB(d);
+            Point[] s = new Point[] { new Point(20, 50), new Point(50, 100), new Point(100, 50), new Point(1, 1) };
+            double[,] test = Quad.CalcHomography(s);
 
-            double[,] AInv = Quad.AInverse(A);
-
-            double[,] product = Quad.MatrixMultiply(AInv, B);
-
-            MessageBox.Show(MatrixToString(product));
+            MessageBox.Show(MatrixToString(test));
 
         }
         
@@ -333,6 +327,10 @@ namespace TextureRipper
                     new Point(Canvas.GetLeft(points[i + 2]), Canvas.GetTop(points[i + 2])),
                     new Point(Canvas.GetLeft(points[i + 3]), Canvas.GetTop(points[i + 3]))
                 });
+
+                double[,] h = Quad.CalcHomography(quad);
+
+                //MessageBox.Show(MatrixToString(h));
 
                 for (var j = 0; j < 4; j++)
                 {

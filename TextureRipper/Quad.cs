@@ -28,58 +28,47 @@ public static class Quad
         });
         return points;
     }
+    
+    public static double[,] CalcHomography(Point[] s) // given Ax = B, solve for x
+    {
+        Point rectSize = CalcRect(s);
+        Point[] d = {
+            new Point(0,0),
+            rectSize with { Y = 0 },
+            new Point(rectSize.X,rectSize.Y),
+            rectSize with { X = 0 }
+        };
+
+        double[,] A = CalcA(s, d);
+        double[,] AInv = AInverse(A);
+        double[,] B = CalcB(d);
+
+        double[,] h = MatrixMultiply(AInv, B);
+
+        return new double[,] // reshape h to a 3x3
+        {
+            {h[0,0],h[1,0],h[2,0]},
+            {h[3,0],h[4,0],h[5,0]},
+            {h[6,0],h[7,0],1},
+        };
+    }
 
     public static Point CalcRect(Point[] points) // calculate rectangle to map the points to
     {                                            // returns (width, height)
-        Point topLeft = points[0];               // is it wasted calculation to have x1,y1 at 0,0?
-        Point topRight = points[0];
-        Point bottomLeft = points[0];
-        Point bottomRight = points[0];
+        var distances = new int[points.Length - 1];
 
-        const double tolerance = 0.0001;
-
-        foreach (Point corner in points) {
-            if (corner.X < topLeft.X - tolerance || (Math.Abs(corner.X - topLeft.X) < tolerance && corner.Y < topLeft.Y - tolerance)) {
-                topLeft = corner;
-            }
-            if (corner.X > topRight.X + tolerance || (Math.Abs(corner.X - topRight.X) < tolerance && corner.Y < topRight.Y - tolerance)) {
-                topRight = corner;
-            }
-            if (corner.X < bottomLeft.X - tolerance || (Math.Abs(corner.X - bottomLeft.X) < tolerance && corner.Y > bottomLeft.Y + tolerance)) {
-                bottomLeft = corner;
-            }
-            if (corner.X > bottomRight.X + tolerance || (Math.Abs(corner.X - bottomRight.X) < tolerance && corner.Y > bottomRight.Y + tolerance)) {
-                bottomRight = corner;
-            }
+        for (int i = 0; i < points.Length - 1; i++)
+        {
+            distances[i] = (int)Math.Sqrt(Math.Pow(points[i + 1].X - points[i].X, 2) + Math.Pow(points[i + 1].Y - points[i].Y, 2));
         }
-        
-        var topLineLength = Math.Sqrt(Math.Pow(topRight.X - topLeft.X, 2) + Math.Pow(topRight.Y - topLeft.Y, 2));
-        var bottomLineLength = Math.Sqrt(Math.Pow(bottomRight.X - bottomLeft.X, 2) + Math.Pow(bottomRight.Y - bottomLeft.Y, 2));
-        
-        var leftSideLength = Math.Sqrt(Math.Pow(topLeft.X - bottomLeft.X, 2) + Math.Pow(topLeft.Y - bottomLeft.Y, 2));
-        var rightSideLength = Math.Sqrt(Math.Pow(topRight.X - bottomRight.X, 2) + Math.Pow(topRight.Y - bottomRight.Y, 2));
 
-        bottomRight.X = topLineLength > bottomLineLength ? bottomLineLength : topLineLength; // overwrite bottomRight
-        bottomRight.Y = leftSideLength > rightSideLength ? rightSideLength : leftSideLength; // to save memory
+        Array.Sort(distances);
 
-        return bottomRight;
+        return new Point(distances[0], distances[1]);
     }
 
-    public static double[][] CalcHomography(Point[] s, Point[] d)
-    {
-
-
-
-        return new double[1][];
-    }
-    
-    public static double[,] CalcA(Point[] s, Point[] d) //https://web.archive.org/web/20100801071311/http://alumni.media.mit.edu/~cwren/interpolator/
-    {                                                   // in this case, the top left of d will always be 0,0
-        if (s.Length != 4 || d.Length != 4) return new double[0,0];
-
-        s = OrderPointsClockwise(s);
-        d = OrderPointsClockwise(d);
-
+    private static double[,] CalcA(Point[] s, Point[] d) //https://web.archive.org/web/20100801071311/http://alumni.media.mit.edu/~cwren/interpolator/
+    {                                                   // in this case, the top left of d will always be the top left of s
         return new double[,]
         {
             {s[0].X, s[0].Y, 1, 0, 0, 0, -d[0].X*s[0].X, -d[0].X*s[0].Y},
@@ -96,7 +85,7 @@ public static class Quad
         };
     }
 
-    public static double[,] CalcB(Point[] d) //format to be multiplied with AInv
+    private static double[,] CalcB(Point[] d) //format to be multiplied with AInv
     {
         d = OrderPointsClockwise(d);
         return new double[,]
@@ -112,7 +101,7 @@ public static class Quad
         };
     }
 
-    public static double[,] AInverse(double[,] A) // Gauss-Jordan elimination method
+    private static double[,] AInverse(double[,] A) // Gauss-Jordan elimination method
     {
         int n = A.GetLength(0);
         double[,] B = new double[n, 2 * n];
