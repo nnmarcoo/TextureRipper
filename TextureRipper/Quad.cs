@@ -3,8 +3,17 @@ using Point = System.Windows.Point;
 
 namespace TextureRipper;
 
+/// <summary>
+/// Class <c>Quad</c> contains methods for calculating and applying a homography matrix.
+/// </summary>
 public static class Quad
 {
+    
+    /// <summary>
+    /// Orders the given points in clockwise order around their center point.
+    /// </summary>
+    /// <param name="points">The points to be ordered.</param>
+    /// <returns>An ordered array of the given points.</returns>
     public static Point[] OrderPointsClockwise(Point[] points)
     {
         // Find the center point of the given points
@@ -28,8 +37,13 @@ public static class Quad
         });
         return points;
     }
-    
-    public static double[,] CalcHomography(Point[] s) // given Ax = B, solve for x
+
+    /// <summary>
+    /// Calculates the homography matrix for the given points.
+    /// </summary>
+    /// <param name="s">The ordered source points.</param>
+    /// <returns>The calculated homography matrix.</returns>
+    public static double[,] CalcH(Point[] s) // given Ax = B, solve for x
     {
         Point rectSize = CalcRect(s);
         Point[] d = {
@@ -48,7 +62,12 @@ public static class Quad
             {h[6,0],h[7,0],1}
         };
     }
-
+    
+    /// <summary>
+    /// Calculates the size of the rectangle that the given points should be mapped to.
+    /// </summary>
+    /// <param name="points">The points to be mapped.</param>
+    /// <returns>The size of the rectangle.</returns>
     private static Point CalcRect(Point[] points) // calculate rectangle to map the points to
     {                                            // returns (width, height)
         var distances = new int[points.Length - 1];
@@ -63,11 +82,17 @@ public static class Quad
         return new Point(distances[0], distances[1]);
     }
 
+    /// <summary>
+    /// Calculates the A matrix for the given source and destination points. (Ax=b)
+    /// </summary>
+    /// <param name="s">The ordered source points.</param>
+    /// <param name="d">The ordered destination points.</param>
+    /// <returns>The calculated A matrix.</returns>
     private static double[,] CalcA(Point[] s, Point[] d) //https://web.archive.org/web/20100801071311/http://alumni.media.mit.edu/~cwren/interpolator/
     {                                                   // in this case, the top left of d will always be the top left of s
         return new[,]
         {
-            {s[0].X, s[0].Y, 1, 0, 0, 0, -d[0].X*s[0].X, -d[0].X*s[0].Y},
+            {s[0].X, s[0].Y, 1, 0, 0, 0, -d[0].X*s[0].X, -d[0].X*s[0].Y}, // I could loop but I like this visual
             {0, 0, 0, s[0].X, s[0].Y, 1, -d[0].Y*s[0].X, -d[0].Y*s[0].Y},
             
             {s[1].X, s[1].Y, 1, 0, 0, 0, -d[1].X*s[1].X, -d[1].X*s[1].Y},
@@ -81,6 +106,12 @@ public static class Quad
         };
     }
 
+    /// <summary>
+    /// Converts the destination list of points into a 1x8 matrix.
+    /// <param name="d">The ordered destination points</param>
+    /// <param name="X">The input vector X</param>
+    /// <returns>The calculated vector B</returns>
+    /// </summary>
     private static double[,] CalcB(Point[] d) //format to be multiplied with AInv
     {
         return new[,]
@@ -95,7 +126,12 @@ public static class Quad
             {d[3].Y}
         };
     }
-
+    
+    /// <summary>
+    /// Calculates the inverse of a given matrix A.
+    /// </summary>
+    /// <param name="A">The matrix to calculate the inverse of.</param>
+    /// <returns>The inverse of matrix A.</returns>
     private static double[,] AInverse(double[,] A) // Gauss-Jordan elimination method todo optimize this
     {
         int n = A.GetLength(0);
@@ -163,6 +199,12 @@ public static class Quad
         return AInv;
     }
 
+    /// <summary>
+    /// Multiplies two matrices A and B and returns the resulting matrix C.
+    /// </summary>
+    /// <param name="A">The first matrix to multiply.</param>
+    /// <param name="B">The second matrix to multiply.</param>
+    /// <returns>The resulting matrix C from multiplying matrices A and B.</returns>
     private static double[,] MatrixMultiply(double[,] a, double[,] b)
     {
         var aRows = a.GetLength(0);
@@ -182,6 +224,11 @@ public static class Quad
         return result;
     }
     
+    /// <summary>
+    /// Converts a matrix to a string representation.
+    /// </summary>
+    /// <param name="matrix">The matrix to convert to a string.</param>
+    /// <returns>A string representation of the matrix.</returns>
     public static string MatrixToString(double[,] matrix)
     {
         int rows = matrix.GetLength(0);
@@ -200,7 +247,17 @@ public static class Quad
         return result;
     }
 
-    public static Point[] AOOB(Point a, Point[] b, double cWidth, double cHeight, double oWidth, double oHeight)
+    /// <summary>
+    /// Specific to the texture ripper project. <c>RemapCoords</c> will remap the Canvas coordinate points relative to the source image for homography.
+    /// </summary>
+    /// <param name="a">Coords of SourceImage.</param>
+    /// <param name="b">Array of quad points</param>
+    /// <param name="cWidth">Current width of image</param>
+    /// <param name="cHeight">Current height of image</param>
+    /// <param name="oWidth">Original width of image</param>
+    /// <param name="oHeight">Original height of image</param>
+    /// <returns>Remapped coordinates of quad.</returns>
+    internal static Point[] RemapCoords(Point a, Point[] b, double cWidth, double cHeight, double oWidth, double oHeight)
     {
         b = new Point[] {// (a,b) -> (c,d) = (-a + c, -b + d)
             new (-a.X + b[0].X, -a.Y + b[0].Y),

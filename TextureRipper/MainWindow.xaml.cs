@@ -229,7 +229,7 @@ namespace TextureRipper
             DisplayWarnings();
         }
 
-        private void ApplyZoom(FrameworkElement element, double zoom, MouseWheelEventArgs e)
+        private static void ApplyZoom(FrameworkElement element, double zoom, MouseWheelEventArgs e)
         {
             double newWidth = element.ActualWidth * zoom; // new width after zoom
             double newHeight = element.ActualHeight * zoom; // new height after zoom
@@ -330,7 +330,7 @@ namespace TextureRipper
 
                 
                 // todo why does this edit the visible lines??
-                var h = Quad.CalcHomography(Quad.AOOB(new Point(Canvas.GetLeft(SourceImage), Canvas.GetTop(SourceImage)), quad, _width, _height,
+                var h = Quad.CalcH(Quad.RemapCoords(new Point(Canvas.GetLeft(SourceImage), Canvas.GetTop(SourceImage)), quad, _width, _height,
                     _file!.Width, _file.Height));
                 
                 
