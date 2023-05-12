@@ -2,6 +2,8 @@
 using System.Windows.Media.Imaging;
 using Point = System.Windows.Point;
 using System.Drawing;
+using System.Threading.Tasks;
+using System.Windows;
 
 namespace TextureRipper;
 
@@ -131,34 +133,34 @@ public static class Quad
     /// <summary>
     /// Calculates the inverse of a given matrix A.
     /// </summary>
-    /// <param name="A">The matrix to calculate the inverse of.</param>
+    /// <param name="a">The matrix to calculate the inverse of.</param>
     /// <returns>The inverse of matrix A.</returns>
-    private static double[,] AInverse(double[,] A) // Gauss-Jordan elimination method todo optimize this
+    private static double[,] AInverse(double[,] a) // Gauss-Jordan elimination method todo optimize this
     {
-        int n = A.GetLength(0);
-        double[,] B = new double[n, 2 * n];
+        int n = a.GetLength(0);
+        double[,] b = new double[n, 2 * n];
 
         // Create an augmented matrix [A|I]
         for (int i = 0; i < n; i++)
         {
             for (int j = 0; j < n; j++)
             {
-                B[i, j] = A[i, j];
+                b[i, j] = a[i, j];
             }
-            B[i, n + i] = 1;
+            b[i, n + i] = 1;
         }
 
         // Perform row operations to transform [A|I] to [I|A^-1]
         for (var i = 0; i < n; i++)
         {
             // Find the pivot element and swap rows if necessary
-            double pivot = B[i, i];
+            double pivot = b[i, i];
             int pivotRow = i;
             for (int j = i + 1; j < n; j++)
             {
-                if (Math.Abs(B[j, i]) > Math.Abs(pivot))
+                if (Math.Abs(b[j, i]) > Math.Abs(pivot))
                 {
-                    pivot = B[j, i];
+                    pivot = b[j, i];
                     pivotRow = j;
                 }
             }
@@ -166,38 +168,38 @@ public static class Quad
             {
                 for (var j = 0; j < 2 * n; j++)
                 {
-                    (B[i, j], B[pivotRow, j]) = (B[pivotRow, j], B[i, j]);
+                    (b[i, j], b[pivotRow, j]) = (b[pivotRow, j], b[i, j]);
                 }
             }
             // Scale the pivot row to make the pivot element equal to 1
             var scale = 1 / pivot;
             for (var j = 0; j < 2 * n; j++)
             {
-                B[i, j] *= scale;
+                b[i, j] *= scale;
             }
             // Use the pivot row to eliminate the pivot elements in the other rows
             for (var j = 0; j < n; j++)
             {
                 if (j != i)
                 {
-                    double factor = B[j, i];
+                    double factor = b[j, i];
                     for (int k = 0; k < 2 * n; k++)
                     {
-                        B[j, k] -= factor * B[i, k];
+                        b[j, k] -= factor * b[i, k];
                     }
                 }
             }
         }
         // Extract the inverse matrix from the augmented matrix
-        double[,] AInv = new double[n, n];
+        double[,] aInv = new double[n, n];
         for (int i = 0; i < n; i++)
         {
             for (int j = 0; j < n; j++)
             {
-                AInv[i, j] = B[i, n + j];
+                aInv[i, j] = b[i, n + j];
             }
         }
-        return AInv;
+        return aInv;
     }
 
     /// <summary>
@@ -276,58 +278,47 @@ public static class Quad
         return b;
     }
 
-    public static Bitmap WarpImage(BitmapImage image, double[,] H, Point[] crop)
+    public static Bitmap WarpImage(BitmapImage image, double[,] h, Point[] crop)
     {
-        BitmapSource bitmapSource = image; // convert to BitmapSource to pull color values
+        WriteableBitmap bitmapSource = new WriteableBitmap(image); // convert to WriteableBitmap to pull color values
 
-        Point size = CalcRect(crop);
-        Bitmap output = new Bitmap((int)size.X, (int)size.Y);
-        
+        byte[] pixelData = new byte[bitmapSource.PixelWidth * bitmapSource.PixelHeight * 4]; // array of pixel colors BGRA32 format
+        bitmapSource.CopyPixels(pixelData, bitmapSource.PixelWidth * 4, 0);        
 
-        int bX = 0;
-        int bY = 0;
+        Bitmap output = new Bitmap(bitmapSource.PixelWidth, bitmapSource.PixelHeight);
         
-        for (var y = 0; y < image.Height; y++)
+        for (var y = 0; y < bitmapSource.PixelHeight; y++)
         {
-            for (var x = 0; x < image.Width; x++)
+            for (var x = 0; x < bitmapSource.PixelWidth; x++)
             {
-                Point point = new Point(x, y);
+                double[,] newpos = MatrixMultiply(h, new double[,] {{x},{y},{1}});
+                int newX = (int)newpos[0, 0];
+                int newY = (int)newpos[1, 0];
 
-                
-                bool isInside = true; 
-                for (int i = 0, j = crop.Length - 1; i < crop.Length; j = i++) // Check if the point is inside the crop
+                if (newX >= 0 && newX < output.Width && newY >= 0 && newY < output.Height)
                 {
-                    if ((crop[i].Y > point.Y) != (crop[j].Y > point.Y) &&
-                        (point.X < (crop[j].X - crop[i].X) * (point.Y - crop[i].Y) / (crop[j].Y - crop[i].Y) + crop[i].X))
-                    {
-                        isInside = !isInside;
-                    }
-                }
-                
-                if (isInside)
-                {
-                    output.SetPixel(bX,bY,GetColor(bitmapSource, x, y));
+                    output.SetPixel(newX, newY, GetArgb(pixelData, bitmapSource, x, y));
                 }
             }
         }
-
         return output;
     }
 
-    private static Color GetColor(BitmapSource bmp, int x, int y)
+
+    private static Color GetArgb(byte[] pixelData, WriteableBitmap image, int x, int y)
     {
-        // Get the color of the pixel at position (x, y)
-        int bytesPerPixel = (bmp.Format.BitsPerPixel + 7) / 8;
-        int stride = bytesPerPixel * bmp.PixelWidth;
-        byte[] pixelData = new byte[stride * bmp.PixelHeight];
-        bmp.CopyPixels(pixelData, stride, 0);
-        int offset = y * stride + x * bytesPerPixel;
-        return Color.FromArgb(
-            pixelData[offset + 3], // Alpha
-            pixelData[offset + 2], // Red
-            pixelData[offset + 1], // Green
-            pixelData[offset]      // Blue
-        );
+        try
+        {
+            return Color.FromArgb(
+                pixelData[4 * x + (y * image.BackBufferStride) + 3],
+                pixelData[4 * x + (y * image.BackBufferStride) + 2],
+                pixelData[4 * x + (y * image.BackBufferStride) + 1],
+                pixelData[4 * x + (y * image.BackBufferStride)]);
+        }
+        catch
+        {
+            return Color.Black;
+        }
     }
 
 }

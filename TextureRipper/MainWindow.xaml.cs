@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Drawing;
-using System.Drawing.Imaging;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -26,11 +25,12 @@ namespace TextureRipper
     public partial class MainWindow
     {
         private BitmapImage? _file;
-        private Bitmap _bitmap;
+        private Bitmap? _bitmap;
         
         private Point _dragMouseOrigin; // for panning
         private Point _lastMousePosition; // for dragging point
         private bool _isDraggingPoint;
+        private bool _isZooming;
         private Rectangle? _selectedPoint;
         
         private readonly SolidColorBrush _lineStroke = new SolidColorBrush(Color.FromArgb(255, 255, 0, 0)); // refactored to avoid SOH
@@ -119,7 +119,9 @@ namespace TextureRipper
             var result = dialog.ShowDialog();
             if (result != true) return;
             
-            _bitmap.Save(dialog.FileName);
+            if (_bitmap != null)
+                _bitmap.Save(dialog.FileName);
+            
             
         }
 
@@ -221,6 +223,7 @@ namespace TextureRipper
             if (_file == null) return;
             if ((SourceImage.ActualWidth * (e.Delta < 0 ? 0.7 : 1.3)) > (4 * ActualWidth) || 
                 (SourceImage.ActualWidth * (e.Delta < 0 ? 0.7 : 1.3)) < (0.1 * ActualWidth)) return;
+            _isZooming = true;
 
             var zoom = e.Delta < 0 ? 0.7 : 1.3;
             
@@ -232,7 +235,6 @@ namespace TextureRipper
                 if (element is not Line) // line transformations are handing by DrawQuads() because they are parented to points
                     ApplyZoom(element, zoom, e);
             }
-
             DrawQuads(); //required
             DisplayWarnings();
         }
@@ -336,18 +338,19 @@ namespace TextureRipper
                     new (Canvas.GetLeft(points[i + 3]), Canvas.GetTop(points[i + 3]))
                 });
 
-                
-                
-                // todo why does this edit the visible lines??
-                var h = Quad.CalcH(Quad.RemapCoords(new Point(Canvas.GetLeft(SourceImage), Canvas.GetTop(SourceImage)), quad, _width, _height,
-                    _file!.Width, _file.Height));
-                
-                
-                //_bitmap = Quad.WarpImage(_file, h, Quad.RemapCoords(new Point(Canvas.GetLeft(SourceImage), Canvas.GetTop(SourceImage)), quad, _width, _height, _file!.Width, _file.Height));
 
-                
-                
-                //_debugH = Quad.MatrixToString(h);
+
+                if (!(_isDraggingPoint && _isZooming))
+                {
+                    var remappedPoints = Quad.RemapCoords(new Point(Canvas.GetLeft(SourceImage), Canvas.GetTop(SourceImage)), quad, _width, _height, _file!.Width, _file.Height);
+
+                    // todo why does this edit the visible lines??
+                    var h = Quad.CalcH(remappedPoints);
+                    
+                    _bitmap = Quad.WarpImage(_file, h, remappedPoints);
+                    
+                    _debugH = Quad.MatrixToString(h);
+                }
 
                 for (var j = 0; j < 4; j++)
                 {
