@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -21,12 +22,17 @@ namespace TextureRipper
     public partial class MainWindow
     {
         private BitmapImage? _file;
+        
         private Point _dragMouseOrigin; // for panning
         private Point _lastMousePosition; // for dragging point
         private bool _isDraggingPoint;
         private Rectangle? _selectedPoint;
+        
         private readonly SolidColorBrush _lineStroke = new SolidColorBrush(Color.FromArgb(255, 255, 0, 0)); // refactored to avoid SOH
         private readonly DoubleCollection _strokeDashArray = new DoubleCollection() { 3, 1 }; // refactored to avoid SOH
+        
+        private double _width; // SourceImage.ActualWidth without lag
+        private double _height; // ''
 
         private string? _debugH;
 
@@ -35,17 +41,26 @@ namespace TextureRipper
             InitializeComponent();
         }
         
-        private void InitializeCanvas(string filename)
+        private async void InitializeCanvas(string filename)
         {
             FileImage.Visibility = Visibility.Collapsed; // hide file image icon
             FileText.Visibility = Visibility.Collapsed;  // hide file text
             
             _file = new BitmapImage(new Uri(filename)); // make Uri for new file
 
+            SourceImage.Visibility = Visibility.Hidden;
             SourceImage.Source = _file; // set the new bitmap to the source image
 
-            Canvas.SetLeft(SourceImage, Window.ActualWidth/2 - _file.Width/2); // center | can't use CenterImage() because SourceImage 
-            Canvas.SetTop(SourceImage, Window.ActualHeight/2 - _file.Height/2); //       | hasn't been loaded yet, somehow
+            while (SourceImage.ActualHeight == 0) // wait for image to load
+            {
+                await Task.Delay(100);
+            }
+
+            CenterImage(SourceImage);
+            SourceImage.Visibility = Visibility.Visible;
+
+            _width = SourceImage.ActualWidth; // save width and height for initial H matrix
+            _height = SourceImage.ActualHeight;
             
             SourceImage.SetValue(RenderOptions.BitmapScalingModeProperty, BitmapScalingMode.NearestNeighbor);
         }
@@ -200,6 +215,9 @@ namespace TextureRipper
                 (SourceImage.ActualWidth * (e.Delta < 0 ? 0.7 : 1.3)) < (0.1 * ActualWidth)) return;
 
             var zoom = e.Delta < 0 ? 0.7 : 1.3;
+            
+            _width = SourceImage.ActualWidth * zoom; //record the new width and height because the object property has delay
+            _height = SourceImage.ActualWidth * zoom;
 
             foreach (FrameworkElement element in Canvas.Children) //Canvas.Children.OfType<Rectangle>()
             {
@@ -312,7 +330,7 @@ namespace TextureRipper
 
                 
                 // todo why does this edit the visible lines??
-                var h = Quad.CalcHomography(Quad.AOOB(new Point(Canvas.GetLeft(SourceImage), Canvas.GetTop(SourceImage)), quad, SourceImage.ActualWidth, SourceImage.ActualHeight,
+                var h = Quad.CalcHomography(Quad.AOOB(new Point(Canvas.GetLeft(SourceImage), Canvas.GetTop(SourceImage)), quad, _width, _height,
                     _file!.Width, _file.Height));
                 
                 
