@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Windows.Media.Imaging;
 using Point = System.Windows.Point;
+using System.Drawing;
 
 namespace TextureRipper;
 
 /// <summary>
-/// Class <c>Quad</c> contains methods for calculating and applying a homography matrix.
+/// Class <c>Quad</c> contains methods for calculating and applying a homography matrix to an image.
 /// </summary>
 public static class Quad
 {
@@ -109,7 +111,6 @@ public static class Quad
     /// <summary>
     /// Converts the destination list of points into a 1x8 matrix.
     /// <param name="d">The ordered destination points</param>
-    /// <param name="X">The input vector X</param>
     /// <returns>The calculated vector B</returns>
     /// </summary>
     private static double[,] CalcB(Point[] d) //format to be multiplied with AInv
@@ -202,9 +203,10 @@ public static class Quad
     /// <summary>
     /// Multiplies two matrices A and B and returns the resulting matrix C.
     /// </summary>
-    /// <param name="A">The first matrix to multiply.</param>
-    /// <param name="B">The second matrix to multiply.</param>
+    /// <param name="a">The first matrix to multiply.</param>
+    /// <param name="b">The second matrix to multiply.</param>
     /// <returns>The resulting matrix C from multiplying matrices A and B.</returns>
+    /// <exception cref="ArgumentException">Thrown when the matrices are not compatible for multiplication.</exception>
     private static double[,] MatrixMultiply(double[,] a, double[,] b)
     {
         var aRows = a.GetLength(0);
@@ -273,4 +275,59 @@ public static class Quad
         }
         return b;
     }
+
+    public static Bitmap WarpImage(BitmapImage image, double[,] H, Point[] crop)
+    {
+        BitmapSource bitmapSource = image; // convert to BitmapSource to pull color values
+
+        Point size = CalcRect(crop);
+        Bitmap output = new Bitmap((int)size.X, (int)size.Y);
+        
+
+        int bX = 0;
+        int bY = 0;
+        
+        for (var y = 0; y < image.Height; y++)
+        {
+            for (var x = 0; x < image.Width; x++)
+            {
+                Point point = new Point(x, y);
+
+                
+                bool isInside = true; 
+                for (int i = 0, j = crop.Length - 1; i < crop.Length; j = i++) // Check if the point is inside the crop
+                {
+                    if ((crop[i].Y > point.Y) != (crop[j].Y > point.Y) &&
+                        (point.X < (crop[j].X - crop[i].X) * (point.Y - crop[i].Y) / (crop[j].Y - crop[i].Y) + crop[i].X))
+                    {
+                        isInside = !isInside;
+                    }
+                }
+                
+                if (isInside)
+                {
+                    output.SetPixel(bX,bY,GetColor(bitmapSource, x, y));
+                }
+            }
+        }
+
+        return output;
+    }
+
+    private static Color GetColor(BitmapSource bmp, int x, int y)
+    {
+        // Get the color of the pixel at position (x, y)
+        int bytesPerPixel = (bmp.Format.BitsPerPixel + 7) / 8;
+        int stride = bytesPerPixel * bmp.PixelWidth;
+        byte[] pixelData = new byte[stride * bmp.PixelHeight];
+        bmp.CopyPixels(pixelData, stride, 0);
+        int offset = y * stride + x * bytesPerPixel;
+        return Color.FromArgb(
+            pixelData[offset + 3], // Alpha
+            pixelData[offset + 2], // Red
+            pixelData[offset + 1], // Green
+            pixelData[offset]      // Blue
+        );
+    }
+
 }

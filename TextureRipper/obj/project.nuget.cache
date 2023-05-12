@@ -1,8 +1,11 @@
 {
   "version": 2,
-  "dgSpecHash": "YIRz5v5ZrNiSZGPMCA8Oa1RWmGbzACbHKo5HC+tGW4Flf5obhbpWQ/VHYY4ALFFuDJbXlHgYhbovtl/Ot5MeTQ==",
+  "dgSpecHash": "feWCoAcaUB68gRJYT3eS+Ay62Ag3DsjGjOTPy2rhbzX+m9OlKVoiWglltxB2sErzxxLdkgSxzlKQSAHyL93Lmw==",
   "success": true,
   "projectFilePath": "C:\\Users\\marco\\Documents\\GitHub\\TextureRipper\\TextureRipper\\TextureRipper.csproj",
-  "expectedPackageFiles": [],
+  "expectedPackageFiles": [
+    "C:\\Users\\marco\\.nuget\\packages\\microsoft.win32.systemevents\\8.0.0-preview.2.23128.3\\microsoft.win32.systemevents.8.0.0-preview.2.23128.3.nupkg.sha512",
+    "C:\\Users\\marco\\.nuget\\packages\\system.drawing.common\\8.0.0-preview.2.23128.3\\system.drawing.common.8.0.0-preview.2.23128.3.nupkg.sha512"
+  ],
   "logs": []
 }

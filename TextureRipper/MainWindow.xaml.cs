@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Drawing;
+using System.Drawing.Imaging;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -10,9 +12,11 @@ using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using Microsoft.Win32;
+using Color = System.Windows.Media.Color;
 using ColorConverter = System.Windows.Media.ColorConverter;
 using Path = System.IO.Path;
 using Point = System.Windows.Point;
+using Rectangle = System.Windows.Shapes.Rectangle;
 
 namespace TextureRipper
 {
@@ -22,6 +26,7 @@ namespace TextureRipper
     public partial class MainWindow
     {
         private BitmapImage? _file;
+        private Bitmap _bitmap;
         
         private Point _dragMouseOrigin; // for panning
         private Point _lastMousePosition; // for dragging point
@@ -107,12 +112,15 @@ namespace TextureRipper
         
         private void SaveButtonClick(object sender, RoutedEventArgs e)
         {
-
-            //Point[] s = new Point[] { new Point(20, 50), new Point(50, 100), new Point(100, 50), new Point(1, 1) };
-            //double[,] test = Quad.CalcHomography(s);
-
-            //MessageBox.Show(MatrixToString(test));
-
+            SaveFileDialog dialog = new SaveFileDialog();
+            dialog.Filter = "PNG Image|*.png|JPEG Image|*.jpg|Bitmap Image|*.bmp";
+            dialog.Title = "Save Image";
+            dialog.FileName = "image.png"; // Default file name
+            var result = dialog.ShowDialog();
+            if (result != true) return;
+            
+            _bitmap.Save(dialog.FileName);
+            
         }
 
         private void DragWindow(object sender, MouseButtonEventArgs e)
@@ -329,12 +337,17 @@ namespace TextureRipper
                 });
 
                 
+                
                 // todo why does this edit the visible lines??
                 var h = Quad.CalcH(Quad.RemapCoords(new Point(Canvas.GetLeft(SourceImage), Canvas.GetTop(SourceImage)), quad, _width, _height,
                     _file!.Width, _file.Height));
                 
                 
-                _debugH = Quad.MatrixToString(h);
+                //_bitmap = Quad.WarpImage(_file, h, Quad.RemapCoords(new Point(Canvas.GetLeft(SourceImage), Canvas.GetTop(SourceImage)), quad, _width, _height, _file!.Width, _file.Height));
+
+                
+                
+                //_debugH = Quad.MatrixToString(h);
 
                 for (var j = 0; j < 4; j++)
                 {
@@ -345,6 +358,8 @@ namespace TextureRipper
                     lines[lineIndex].X2 = quad[(j + 1) % 4].X;
                     lines[lineIndex].Y2 = quad[(j + 1) % 4].Y;
                 }
+                
+                
             }
         }
 
