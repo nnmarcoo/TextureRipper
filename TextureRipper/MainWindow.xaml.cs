@@ -30,14 +30,10 @@ namespace TextureRipper
         private Point _dragMouseOrigin; // for panning
         private Point _lastMousePosition; // for dragging point
         private bool _isDraggingPoint;
-        private bool _isZooming;
         private Rectangle? _selectedPoint;
         
         private readonly SolidColorBrush _lineStroke = new SolidColorBrush(Color.FromArgb(255, 255, 0, 0)); // refactored to avoid SOH
         private readonly DoubleCollection _strokeDashArray = new DoubleCollection() { 3, 1 }; // refactored to avoid SOH
-        
-        private double _width; // SourceImage.ActualWidth without lag
-        private double _height; // ''
 
         private string? _debugH;
 
@@ -52,21 +48,13 @@ namespace TextureRipper
             FileText.Visibility = Visibility.Collapsed;  // hide file text
             
             _file = new BitmapImage(new Uri(filename)); // make Uri for new file
-
-            SourceImage.Visibility = Visibility.Hidden;
+            
             SourceImage.Source = _file; // set the new bitmap to the source image
 
-            while (SourceImage.ActualHeight == 0) // wait for image to load
-            {
-                await Task.Delay(100);
-            }
+            SourceImage.UpdateLayout();
 
             CenterImage(SourceImage);
-            SourceImage.Visibility = Visibility.Visible;
 
-            _width = SourceImage.ActualWidth; // save width and height for initial H matrix
-            _height = SourceImage.ActualHeight;
-            
             SourceImage.SetValue(RenderOptions.BitmapScalingModeProperty, BitmapScalingMode.NearestNeighbor);
         }
         
@@ -223,16 +211,12 @@ namespace TextureRipper
             if (_file == null) return;
             if ((SourceImage.ActualWidth * (e.Delta < 0 ? 0.7 : 1.3)) > (4 * ActualWidth) || 
                 (SourceImage.ActualWidth * (e.Delta < 0 ? 0.7 : 1.3)) < (0.1 * ActualWidth)) return;
-            _isZooming = true;
 
             var zoom = e.Delta < 0 ? 0.7 : 1.3;
-            
-            _width = SourceImage.ActualWidth * zoom; //record the new width and height because the object property has delay
-            _height = SourceImage.ActualWidth * zoom;
 
             foreach (FrameworkElement element in Canvas.Children) //Canvas.Children.OfType<Rectangle>()
             {
-                if (element is not Line) // line transformations are handing by DrawQuads() because they are parented to points
+                //if (element is not Line) // line transformations are handing by DrawQuads() because they are parented to points
                     ApplyZoom(element, zoom, e);
             }
             DrawQuads(); //required
@@ -250,7 +234,7 @@ namespace TextureRipper
             double offsetX = e.GetPosition(element).X * dWidth / element.ActualWidth;
             double offsetY = e.GetPosition(element).Y * dHeight / element.ActualHeight;
 
-            if (element is not Rectangle)
+            if (element is not Rectangle && element is not Line)
             {
                 element.Width = newWidth; // resize width
                 element.Height = newHeight; // resize height
@@ -338,21 +322,21 @@ namespace TextureRipper
                     new (Canvas.GetLeft(points[i + 3]), Canvas.GetTop(points[i + 3]))
                 });
 
+                UpdateEverything();
+                Point[] remappedPoints = Quad.RemapCoords(new Point(Canvas.GetLeft(SourceImage), Canvas.GetTop(SourceImage)), quad, SourceImage.ActualWidth, SourceImage.ActualHeight, _file!.Width, _file.Height);
+                Point rect = Quad.CalcRect(remappedPoints);
+                
+               // MessageBox.Show(remappedPoints[0] + "\n" + remappedPoints[1] + "\n" + remappedPoints[2] + "\n" +remappedPoints[3] + "\n\n" + rect.X + ", " + rect.Y);
 
+                
+                // todo why does this edit the visible lines??
+                var h = Quad.CalcH(remappedPoints);
 
-                if (!(_isDraggingPoint && _isZooming))
-                {
-                    var remappedPoints = Quad.RemapCoords(new Point(Canvas.GetLeft(SourceImage), Canvas.GetTop(SourceImage)), quad, _width, _height, _file!.Width, _file.Height);
+                _bitmap = Quad.WarpImage(_file, h, remappedPoints);
 
-                    // todo why does this edit the visible lines??
-                    var h = Quad.CalcH(remappedPoints);
-                    
-                    _bitmap = Quad.WarpImage(_file, h, remappedPoints);
-                    
-                    _debugH = Quad.MatrixToString(h);
-                }
+                _debugH = Quad.MatrixToString(h);
 
-                for (var j = 0; j < 4; j++)
+                    for (var j = 0; j < 4; j++)
                 {
                     var lineIndex = i + j;
 
@@ -375,8 +359,16 @@ namespace TextureRipper
         {
             Mouse.OverrideCursor = null;
         }
-        
-        
+
+        private void UpdateEverything()
+        {
+            foreach (FrameworkElement element in Canvas.Children)
+            {
+                element.UpdateLayout();
+            }
+        }
+
+
         //WARNINGS
         private int CountMissingPoints()
         {

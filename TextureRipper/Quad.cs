@@ -1,9 +1,8 @@
-﻿using System;
-using System.Windows.Media.Imaging;
-using Point = System.Windows.Point;
+﻿using System; // for rudiementary math and other
+using System.Windows.Media.Imaging; // for importing an image
+using Point = System.Windows.Point; // for Point object
 using System.Drawing;
-using System.Threading.Tasks;
-using System.Windows;
+using System.Windows; // for creating a bitmap (new image)
 
 namespace TextureRipper;
 
@@ -72,18 +71,17 @@ public static class Quad
     /// </summary>
     /// <param name="points">The points to be mapped.</param>
     /// <returns>The size of the rectangle.</returns>
-    private static Point CalcRect(Point[] points) // calculate rectangle to map the points to
+    public static Point CalcRect(Point[] points) // calculate rectangle to map the points to
     {                                            // returns (width, height)
-        var distances = new int[points.Length - 1];
 
-        for (int i = 0; i < points.Length - 1; i++)
-        {
-            distances[i] = (int)Math.Sqrt(Math.Pow(points[i + 1].X - points[i].X, 2) + Math.Pow(points[i + 1].Y - points[i].Y, 2));
-        }
-
-        Array.Sort(distances);
-
-        return new Point(distances[0], distances[1]);
+        double topLength;
+        double sideLength;
+        
+        topLength = Point.Subtract(points[0], points[1]).Length > Point.Subtract(points[3], points[2]).Length ? Point.Subtract(points[3], points[2]).Length : Point.Subtract(points[0], points[1]).Length;
+        
+        sideLength = Point.Subtract(points[1], points[2]).Length > Point.Subtract(points[0], points[3]).Length ? Point.Subtract(points[0], points[3]).Length : Point.Subtract(points[1], points[2]).Length;
+        
+        return new Point(topLength, sideLength);
     }
 
     /// <summary>
@@ -135,7 +133,7 @@ public static class Quad
     /// </summary>
     /// <param name="a">The matrix to calculate the inverse of.</param>
     /// <returns>The inverse of matrix A.</returns>
-    private static double[,] AInverse(double[,] a) // Gauss-Jordan elimination method todo optimize this
+    private static double[,] AInverse(double[,] a) // Gauss-Jordan elimination method todo use a faster method
     {
         int n = a.GetLength(0);
         double[,] b = new double[n, 2 * n];
@@ -243,7 +241,7 @@ public static class Quad
         {
             for (int j = 0; j < cols; j++)
             {
-                result += matrix[i, j].ToString("0.0").PadLeft(10) + " ";
+                result += matrix[i, j].ToString("0.000").PadLeft(10) + " ";
             }
             result += "\n";
         }
@@ -280,12 +278,13 @@ public static class Quad
 
     public static Bitmap WarpImage(BitmapImage image, double[,] h, Point[] crop)
     {
+        Point outres = CalcRect(crop);
         WriteableBitmap bitmapSource = new WriteableBitmap(image); // convert to WriteableBitmap to pull color values
 
         byte[] pixelData = new byte[bitmapSource.PixelWidth * bitmapSource.PixelHeight * 4]; // array of pixel colors BGRA32 format
         bitmapSource.CopyPixels(pixelData, bitmapSource.PixelWidth * 4, 0);        
 
-        Bitmap output = new Bitmap(bitmapSource.PixelWidth, bitmapSource.PixelHeight);
+        Bitmap output = new Bitmap((int)outres.X, (int)outres.Y);
         
         for (var y = 0; y < bitmapSource.PixelHeight; y++)
         {
