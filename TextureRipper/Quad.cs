@@ -39,17 +39,13 @@ public static class Quad
             rectSize with { X = 0 }
         };
 
-        double[,] A = CalcA(s, d);
-        double[,] AInv = AInverse(A);
-        double[,] B = CalcB(d);
+        double[,] h = MatrixMultiply(AInverse(CalcA(s, d)), CalcB(d));
 
-        double[,] h = MatrixMultiply(AInv, B);
-
-        return new double[,] // reshape h to a 3x3
+        return new[,] // reshape h to a 3x3
         {
             {h[0,0],h[1,0],h[2,0]},
             {h[3,0],h[4,0],h[5,0]},
-            {h[6,0],h[7,0],1},
+            {h[6,0],h[7,0],1}
         };
     }
 
@@ -69,7 +65,7 @@ public static class Quad
 
     private static double[,] CalcA(Point[] s, Point[] d) //https://web.archive.org/web/20100801071311/http://alumni.media.mit.edu/~cwren/interpolator/
     {                                                   // in this case, the top left of d will always be the top left of s
-        return new double[,]
+        return new[,]
         {
             {s[0].X, s[0].Y, 1, 0, 0, 0, -d[0].X*s[0].X, -d[0].X*s[0].Y},
             {0, 0, 0, s[0].X, s[0].Y, 1, -d[0].Y*s[0].X, -d[0].Y*s[0].Y},
@@ -87,8 +83,7 @@ public static class Quad
 
     private static double[,] CalcB(Point[] d) //format to be multiplied with AInv
     {
-        d = OrderPointsClockwise(d);
-        return new double[,]
+        return new[,]
         {
             {d[0].X},
             {d[0].Y},
@@ -170,10 +165,10 @@ public static class Quad
 
     private static double[,] MatrixMultiply(double[,] a, double[,] b)
     {
-        int aRows = a.GetLength(0);
-        int aCols = a.GetLength(1);
-        int bRows = b.GetLength(0);
-        int bCols = b.GetLength(1);
+        var aRows = a.GetLength(0);
+        var aCols = a.GetLength(1);
+        var bRows = b.GetLength(0);
+        var bCols = b.GetLength(1);
 
         if (aCols != bRows)
             throw new ArgumentException("Matrices not compatible");
@@ -197,12 +192,28 @@ public static class Quad
         {
             for (int j = 0; j < cols; j++)
             {
-                result += matrix[i, j].ToString("0.000").PadLeft(10) + " ";
+                result += matrix[i, j].ToString("0.0").PadLeft(10) + " ";
             }
             result += "\n";
         }
 
         return result;
     }
-    
+
+    public static Point[] AOOB(Point a, Point[] b, double cWidth, double cHeight, double oWidth, double oHeight)
+    {
+        b = new Point[] {// (a,b) -> (c,d) = (-a + c, -b + d)
+            new (-a.X + b[0].X, -a.Y + b[0].Y),
+            new (-a.X + b[1].X, -a.Y + b[1].Y),
+            new (-a.X + b[2].X, -a.Y + b[2].Y),
+            new (-a.X + b[3].X, -a.Y + b[3].Y)
+        };
+
+        for (var i = 0; i < b.Length; i++) // (X,Y) / (currWidth,currHeight) * (origWidth, origHeight) = pos relative to orig image
+        {
+            b[i].X = (b[i].X / cWidth) * oWidth;
+            b[i].Y = (b[i].Y / cHeight) * oHeight;
+        }
+        return b;
+    }
 }

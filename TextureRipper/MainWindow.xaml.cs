@@ -28,7 +28,7 @@ namespace TextureRipper
         private readonly SolidColorBrush _lineStroke = new SolidColorBrush(Color.FromArgb(255, 255, 0, 0)); // refactored to avoid SOH
         private readonly DoubleCollection _strokeDashArray = new DoubleCollection() { 3, 1 }; // refactored to avoid SOH
 
-        private string? debugH;
+        private string? _debugH;
 
         public MainWindow()
         {
@@ -293,7 +293,7 @@ namespace TextureRipper
         }
 
         private void DrawQuads() // todo fix bug: when UNDO called, incorrect lines deleted / not turned off
-        {                        
+        {                        // fix is: in the if, turn off those lines
             if (Canvas.Children.OfType<Rectangle>().Count() < 4) return;
 
             var points = Canvas.Children.OfType<Rectangle>().ToList();
@@ -303,16 +303,20 @@ namespace TextureRipper
             {
                 if (i + 3 >= points.Count) break;
 
-                var quad = Quad.OrderPointsClockwise( new[] {
-                    new Point(Canvas.GetLeft(points[i]), Canvas.GetTop(points[i])),
-                    new Point(Canvas.GetLeft(points[i + 1]), Canvas.GetTop(points[i + 1])),
-                    new Point(Canvas.GetLeft(points[i + 2]), Canvas.GetTop(points[i + 2])),
-                    new Point(Canvas.GetLeft(points[i + 3]), Canvas.GetTop(points[i + 3]))
+                var quad = Quad.OrderPointsClockwise( new Point[] {
+                    new (Canvas.GetLeft(points[i]), Canvas.GetTop(points[i])),
+                    new (Canvas.GetLeft(points[i + 1]), Canvas.GetTop(points[i + 1])),
+                    new (Canvas.GetLeft(points[i + 2]), Canvas.GetTop(points[i + 2])),
+                    new (Canvas.GetLeft(points[i + 3]), Canvas.GetTop(points[i + 3]))
                 });
 
-                double[,] h = Quad.CalcHomography(quad);
-                debugH = Quad.MatrixToString(h);
-                //MessageBox.Show(MatrixToString(h));
+                
+                // todo why does this edit the visible lines??
+                var h = Quad.CalcHomography(Quad.AOOB(new Point(Canvas.GetLeft(SourceImage), Canvas.GetTop(SourceImage)), quad, SourceImage.ActualWidth, SourceImage.ActualHeight,
+                    _file!.Width, _file.Height));
+                
+                
+                _debugH = Quad.MatrixToString(h);
 
                 for (var j = 0; j < 4; j++)
                 {
@@ -326,7 +330,6 @@ namespace TextureRipper
             }
         }
 
-        
         private void PointMouseEnter(object sender, MouseEventArgs e)
         {
             Mouse.OverrideCursor = Cursors.SizeAll;
@@ -398,7 +401,7 @@ namespace TextureRipper
 
         private void DisplayWarnings()
         {
-            var warning = debugH + "\n";
+            var warning = _debugH + "\n";
 
             if (Canvas.Children.OfType<Rectangle>().Count() > 19)
                 warning += "Performance mode on\n";
@@ -450,7 +453,7 @@ namespace TextureRipper
             if (e.Key == Key.C) Info.Visibility = Info.IsVisible ? Visibility.Collapsed : Visibility.Visible;
             DisplayWarnings();
         }
-        
+
         private void MainWindowClosing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             // Create the animation for opacity
