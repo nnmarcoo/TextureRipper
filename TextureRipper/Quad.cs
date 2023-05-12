@@ -1,8 +1,7 @@
-﻿using System; // for rudiementary math and other
-using System.Windows.Media.Imaging; // for importing an image
-using Point = System.Windows.Point; // for Point object
+﻿using System;
+using System.Windows.Media.Imaging;
+using Point = System.Windows.Point;
 using System.Drawing;
-using System.Windows; // for creating a bitmap (new image)
 
 namespace TextureRipper;
 
@@ -285,6 +284,9 @@ public static class Quad
         bitmapSource.CopyPixels(pixelData, bitmapSource.PixelWidth * 4, 0);        
 
         Bitmap output = new Bitmap((int)outres.X, (int)outres.Y);
+
+        int bX = 0;
+        int bY = 0;
         
         for (var y = 0; y < bitmapSource.PixelHeight; y++)
         {
@@ -303,6 +305,14 @@ public static class Quad
         return output;
     }
 
+    private static Color BilinearInterpolation(double[,] data, int x, int y)
+    {
+        int x1 = ;
+        int x2 = ;
+        int y1 = ;
+        int y2 = ;
+    }
+
 
     private static Color GetArgb(byte[] pixelData, WriteableBitmap image, int x, int y)
     {
@@ -316,7 +326,7 @@ public static class Quad
         }
         catch
         {
-            return Color.Black;
+            return Color.DeepPink;
         }
     }
 
