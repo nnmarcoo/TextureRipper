@@ -275,7 +275,7 @@ public static class Quad
         return b;
     }
 
-    public static Bitmap WarpImage(BitmapImage image, double[,] h, Point[] crop)
+    public static Bitmap WarpImage(BitmapImage image, double[,] h, Point[] crop) // todo apply the transformation to the rectangle too???
     {
         Point outres = CalcRect(crop);
         WriteableBitmap bitmapSource = new WriteableBitmap(image); // convert to WriteableBitmap to pull color values
@@ -283,7 +283,8 @@ public static class Quad
         byte[] pixelData = new byte[bitmapSource.PixelWidth * bitmapSource.PixelHeight * 4]; // array of pixel colors BGRA32 format
         bitmapSource.CopyPixels(pixelData, bitmapSource.PixelWidth * 4, 0);        
 
-        Bitmap output = new Bitmap((int)outres.X, (int)outres.Y);
+        //Bitmap output = new Bitmap((int)outres.X, (int)outres.Y);
+        Bitmap output = new Bitmap((int)image.Width, (int)image.Height);
 
         int bX = 0;
         int bY = 0;
@@ -305,15 +306,6 @@ public static class Quad
         return output;
     }
 
-    private static Color BilinearInterpolation(double[,] data, int x, int y)
-    {
-        int x1 = ;
-        int x2 = ;
-        int y1 = ;
-        int y2 = ;
-    }
-
-
     private static Color GetArgb(byte[] pixelData, WriteableBitmap image, int x, int y)
     {
         try
@@ -329,5 +321,4 @@ public static class Quad
             return Color.DeepPink;
         }
     }
-
 }
