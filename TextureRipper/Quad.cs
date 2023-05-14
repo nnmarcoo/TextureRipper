@@ -73,12 +73,9 @@ public static class Quad
     public static Point CalcRect(Point[] points) // calculate rectangle to map the points to
     {                                            // returns (width, height)
 
-        double topLength;
-        double sideLength;
+        var topLength = Point.Subtract(points[0], points[1]).Length > Point.Subtract(points[3], points[2]).Length ? Point.Subtract(points[3], points[2]).Length : Point.Subtract(points[0], points[1]).Length;
         
-        topLength = Point.Subtract(points[0], points[1]).Length > Point.Subtract(points[3], points[2]).Length ? Point.Subtract(points[3], points[2]).Length : Point.Subtract(points[0], points[1]).Length;
-        
-        sideLength = Point.Subtract(points[1], points[2]).Length > Point.Subtract(points[0], points[3]).Length ? Point.Subtract(points[0], points[3]).Length : Point.Subtract(points[1], points[2]).Length;
+        var sideLength = Point.Subtract(points[1], points[2]).Length > Point.Subtract(points[0], points[3]).Length ? Point.Subtract(points[0], points[3]).Length : Point.Subtract(points[1], points[2]).Length;
         
         return new Point(topLength, sideLength);
     }
@@ -275,36 +272,61 @@ public static class Quad
         return b;
     }
 
-    public static Bitmap WarpImage(BitmapImage image, double[,] h, Point[] crop) // todo apply the transformation to the rectangle too???
+    public static Bitmap WarpImage(BitmapImage image, double[,] h, Point[] crop)
+{
+    Point outres = CalcRect(crop);
+    WriteableBitmap bitmapSource = new WriteableBitmap(image);
+
+    byte[] pixelData = new byte[bitmapSource.PixelWidth * bitmapSource.PixelHeight * 4];
+    bitmapSource.CopyPixels(pixelData, bitmapSource.PixelWidth * 4, 0);
+
+    Bitmap output = new Bitmap((int)outres.X, (int)outres.Y);
+
+    for (var y = 0; y < output.Height; y++)
     {
-        Point outres = CalcRect(crop);
-        WriteableBitmap bitmapSource = new WriteableBitmap(image); // convert to WriteableBitmap to pull color values
-
-        byte[] pixelData = new byte[bitmapSource.PixelWidth * bitmapSource.PixelHeight * 4]; // array of pixel colors BGRA32 format
-        bitmapSource.CopyPixels(pixelData, bitmapSource.PixelWidth * 4, 0);        
-
-        //Bitmap output = new Bitmap((int)outres.X, (int)outres.Y);
-        Bitmap output = new Bitmap((int)image.Width, (int)image.Height);
-
-        int bX = 0;
-        int bY = 0;
-        
-        for (var y = 0; y < bitmapSource.PixelHeight; y++)
+        for (var x = 0; x < output.Width; x++)
         {
-            for (var x = 0; x < bitmapSource.PixelWidth; x++)
-            {
-                double[,] newpos = MatrixMultiply(h, new double[,] {{x},{y},{1}});
-                int newX = (int)newpos[0, 0];
-                int newY = (int)newpos[1, 0];
+            double[,] invH = AInverse(h);
+            double[,] pos = MatrixMultiply(invH, new double[,] {{x},{y},{1}});
+            double newX = pos[0, 0] / pos[2, 0];
+            double newY = pos[1, 0] / pos[2, 0];
 
-                if (newX >= 0 && newX < output.Width && newY >= 0 && newY < output.Height)
-                {
-                    output.SetPixel(newX, newY, GetArgb(pixelData, bitmapSource, x, y));
-                }
+            if (newX >= 0 && newX < bitmapSource.PixelWidth && newY >= 0 && newY < bitmapSource.PixelHeight)
+            {
+                int x1 = (int)Math.Floor(newX);
+                int x2 = (int)Math.Ceiling(newX);
+                int y1 = (int)Math.Floor(newY);
+                int y2 = (int)Math.Ceiling(newY);
+
+                double xRatio = newX - x1;
+                double yRatio = newY - y1;
+
+                Color color1 = GetArgb(pixelData, bitmapSource, x1, y1);
+                Color color2 = GetArgb(pixelData, bitmapSource, x2, y1);
+                Color color3 = GetArgb(pixelData, bitmapSource, x1, y2);
+                Color color4 = GetArgb(pixelData, bitmapSource, x2, y2);
+
+                double weight1 = (1 - xRatio) * (1 - yRatio);
+                double weight2 = xRatio * (1 - yRatio);
+                double weight3 = (1 - xRatio) * yRatio;
+                double weight4 = xRatio * yRatio;
+
+                int red = (int)(color1.R * weight1 + color2.R * weight2 + color3.R * weight3 + color4.R * weight4);
+                int green = (int)(color1.G * weight1 + color2.G * weight2 + color3.G * weight3 + color4.G * weight4);
+                int blue = (int)(color1.B * weight1 + color2.B * weight2 + color3.B * weight3 + color4.B * weight4);
+
+                output.SetPixel(x, y, Color.FromArgb(red, green, blue));
             }
         }
-        return output;
     }
+    return output;
+}
+
+        
+        //bilinear interpolation
+        
+        
+        
 
     private static Color GetArgb(byte[] pixelData, WriteableBitmap image, int x, int y)
     {
