@@ -273,60 +273,56 @@ public static class Quad
     }
 
     public static Bitmap WarpImage(BitmapImage image, double[,] h, Point[] crop)
-{
-    Point outres = CalcRect(crop);
-    WriteableBitmap bitmapSource = new WriteableBitmap(image);
-
-    byte[] pixelData = new byte[bitmapSource.PixelWidth * bitmapSource.PixelHeight * 4];
-    bitmapSource.CopyPixels(pixelData, bitmapSource.PixelWidth * 4, 0);
-
-    Bitmap output = new Bitmap((int)outres.X, (int)outres.Y);
-
-    for (var y = 0; y < output.Height; y++)
     {
-        for (var x = 0; x < output.Width; x++)
+        Point outres = CalcRect(crop); // calculate size of output image
+        WriteableBitmap bitmapSource = new WriteableBitmap(image); // convert to WriteableBitmap to pull color values
+
+        byte[] pixelData = new byte[bitmapSource.PixelWidth * bitmapSource.PixelHeight * 4]; // array of pixel colors BGRA32 format
+        bitmapSource.CopyPixels(pixelData, bitmapSource.PixelWidth * 4, 0); // put pixel data on array
+
+        Bitmap output = new Bitmap((int)outres.X, (int)outres.Y); // output bitmap
+
+        for (var y = 0; y < output.Height; y++) // loop through each pixel in output image
         {
-            double[,] invH = AInverse(h);
-            double[,] pos = MatrixMultiply(invH, new double[,] {{x},{y},{1}});
-            double newX = pos[0, 0] / pos[2, 0];
-            double newY = pos[1, 0] / pos[2, 0];
-
-            if (newX >= 0 && newX < bitmapSource.PixelWidth && newY >= 0 && newY < bitmapSource.PixelHeight)
+            for (var x = 0; x < output.Width; x++)
             {
-                int x1 = (int)Math.Floor(newX);
-                int x2 = (int)Math.Ceiling(newX);
-                int y1 = (int)Math.Floor(newY);
-                int y2 = (int)Math.Ceiling(newY);
+                double[,] invH = AInverse(h); // invert transformation matrix because we need to compute the corresponding location in the original image from the warped image location
+                double[,] pos = MatrixMultiply(invH, new double[,] {{x},{y},{1}}); // transform current pixel position to the original image's position
+                double newX = pos[0, 0] / pos[2, 0]; // divide by homogeneous coordinate to get normalized x coordinate (convert to cartesian)
+                double newY = pos[1, 0] / pos[2, 0]; // divide by homogeneous coordinate to get normalized y coordinate (convert to cartesian)
 
-                double xRatio = newX - x1;
-                double yRatio = newY - y1;
+                if (newX >= 0 && newX < bitmapSource.PixelWidth && newY >= 0 && newY < bitmapSource.PixelHeight) // check if pixel is within bounds of original image
+                {
+                    //bilinear interpolation
+                    
+                    int x1 = (int)Math.Floor(newX); // get surrounding pixels
+                    int x2 = (int)Math.Ceiling(newX);
+                    int y1 = (int)Math.Floor(newY);
+                    int y2 = (int)Math.Ceiling(newY);
 
-                Color color1 = GetArgb(pixelData, bitmapSource, x1, y1);
-                Color color2 = GetArgb(pixelData, bitmapSource, x2, y1);
-                Color color3 = GetArgb(pixelData, bitmapSource, x1, y2);
-                Color color4 = GetArgb(pixelData, bitmapSource, x2, y2);
+                    double xRatio = newX - x1; // calculate interpolation weights
+                    double yRatio = newY - y1;
 
-                double weight1 = (1 - xRatio) * (1 - yRatio);
-                double weight2 = xRatio * (1 - yRatio);
-                double weight3 = (1 - xRatio) * yRatio;
-                double weight4 = xRatio * yRatio;
+                    Color color1 = GetArgb(pixelData, bitmapSource, x1, y1); // get colors of surrounding pixels
+                    Color color2 = GetArgb(pixelData, bitmapSource, x2, y1);
+                    Color color3 = GetArgb(pixelData, bitmapSource, x1, y2);
+                    Color color4 = GetArgb(pixelData, bitmapSource, x2, y2);
 
-                int red = (int)(color1.R * weight1 + color2.R * weight2 + color3.R * weight3 + color4.R * weight4);
-                int green = (int)(color1.G * weight1 + color2.G * weight2 + color3.G * weight3 + color4.G * weight4);
-                int blue = (int)(color1.B * weight1 + color2.B * weight2 + color3.B * weight3 + color4.B * weight4);
+                    double weight1 = (1 - xRatio) * (1 - yRatio); // calculate weight of each surrounding pixel
+                    double weight2 = xRatio * (1 - yRatio);
+                    double weight3 = (1 - xRatio) * yRatio;
+                    double weight4 = xRatio * yRatio;
 
-                output.SetPixel(x, y, Color.FromArgb(red, green, blue));
+                    int r = (int)(color1.R * weight1 + color2.R * weight2 + color3.R * weight3 + color4.R * weight4); // interpolate red, green, and blue values
+                    int g = (int)(color1.G * weight1 + color2.G * weight2 + color3.G * weight3 + color4.G * weight4);
+                    int b = (int)(color1.B * weight1 + color2.B * weight2 + color3.B * weight3 + color4.B * weight4);
+
+                    output.SetPixel(x, y, Color.FromArgb(r, g, b)); // set color of current pixel in output image
+                }
             }
         }
+        return output; // return the warped and interpolated output image
     }
-    return output;
-}
-
-        
-        //bilinear interpolation
-        
-        
-        
 
     private static Color GetArgb(byte[] pixelData, WriteableBitmap image, int x, int y)
     {
