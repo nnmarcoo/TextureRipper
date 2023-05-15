@@ -41,8 +41,33 @@ namespace TextureRipper
         {
             InitializeComponent();
         }
-        
-        private async void InitializeCanvas(string filename)
+
+        public bool IsDraggingPoint // todo broken
+        {
+            get { return _isDraggingPoint; }
+            set
+            {
+                if (_isDraggingPoint != value)
+                {
+                    _isDraggingPoint = value;
+
+                    // Code to execute after the value changes
+                    // Replace this with your desired code
+                    if (_isDraggingPoint)
+                    {
+                        MessageBox.Show("isDraggingPoint changed to true.");
+                        // Execute additional actions
+                    }
+                    else
+                    {
+                        MessageBox.Show("isDraggingPoint changed to false.");
+                        // Execute additional actions
+                    }
+                }
+            }
+        }
+
+        private void InitializeCanvas(string filename)
         {
             FileImage.Visibility = Visibility.Collapsed; // hide file image icon
             FileText.Visibility = Visibility.Collapsed;  // hide file text
@@ -306,7 +331,7 @@ namespace TextureRipper
 
         private void DrawQuads() // todo fix bug: when UNDO called, incorrect lines deleted / not turned off
         {                        // fix is: in the if, turn off those lines
-            if (Canvas.Children.OfType<Rectangle>().Count() < 4) return;
+            if (Canvas.Children.OfType<Rectangle>().Count() < 4) return; // todo ensure enough lines exist for every 4 points, otherwise add more and remove extra?
 
             var points = Canvas.Children.OfType<Rectangle>().ToList();
             var lines = Canvas.Children.OfType<Line>().ToList();
@@ -322,21 +347,20 @@ namespace TextureRipper
                     new (Canvas.GetLeft(points[i + 3]), Canvas.GetTop(points[i + 3]))
                 });
 
-                UpdateEverything();
-                Point[] remappedPoints = Quad.RemapCoords(new Point(Canvas.GetLeft(SourceImage), Canvas.GetTop(SourceImage)), quad, SourceImage.ActualWidth, SourceImage.ActualHeight, _file!.Width, _file.Height);
-                Point rect = Quad.CalcRect(remappedPoints);
-                
-               // MessageBox.Show(remappedPoints[0] + "\n" + remappedPoints[1] + "\n" + remappedPoints[2] + "\n" +remappedPoints[3] + "\n\n" + rect.X + ", " + rect.Y);
+                if (!_isDraggingPoint && _selectedPoint == null)
+                {
+                    UpdateEverything();
+                    Point[] remappedPoints =
+                        Quad.RemapCoords(new Point(Canvas.GetLeft(SourceImage), Canvas.GetTop(SourceImage)), quad,
+                            SourceImage.ActualWidth, SourceImage.ActualHeight, _file!.Width, _file.Height);
 
-                
-                // todo why does this edit the visible lines??
-                var h = Quad.CalcH(remappedPoints);
+                    // todo why does this edit the visible lines??
+                    var h = Quad.CalcH(remappedPoints);
 
-                _bitmap = Quad.WarpImage(_file, h, remappedPoints);
+                    _bitmap = Quad.WarpImage(_file, h, remappedPoints);
+                }
 
-                _debugH = Quad.MatrixToString(h);
-
-                    for (var j = 0; j < 4; j++)
+                for (var j = 0; j < 4; j++)
                 {
                     var lineIndex = i + j;
 
@@ -345,8 +369,6 @@ namespace TextureRipper
                     lines[lineIndex].X2 = quad[(j + 1) % 4].X;
                     lines[lineIndex].Y2 = quad[(j + 1) % 4].Y;
                 }
-                
-                
             }
         }
 
@@ -360,7 +382,7 @@ namespace TextureRipper
             Mouse.OverrideCursor = null;
         }
 
-        private void UpdateEverything()
+        private void UpdateEverything() // is this necessary?
         {
             foreach (FrameworkElement element in Canvas.Children)
             {

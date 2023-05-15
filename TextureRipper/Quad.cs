@@ -248,13 +248,13 @@ public static class Quad
     /// <summary>
     /// Specific to the texture ripper project. <c>RemapCoords</c> will remap the Canvas coordinate points relative to the source image for homography.
     /// </summary>
-    /// <param name="a">Coords of SourceImage.</param>
+    /// <param name="a">Coords of SourceImage</param>
     /// <param name="b">Array of quad points</param>
     /// <param name="cWidth">Current width of image</param>
     /// <param name="cHeight">Current height of image</param>
     /// <param name="oWidth">Original width of image</param>
     /// <param name="oHeight">Original height of image</param>
-    /// <returns>Remapped coordinates of quad.</returns>
+    /// <returns>Remapped coordinates of quad</returns>
     internal static Point[] RemapCoords(Point a, Point[] b, double cWidth, double cHeight, double oWidth, double oHeight)
     {
         b = new Point[] {// (a,b) -> (c,d) = (-a + c, -b + d)
@@ -272,6 +272,13 @@ public static class Quad
         return b;
     }
 
+    /// <summary>
+    /// Apply a homography matrix to an image and output the cropped region.
+    /// </summary>
+    /// <param name="image">Input image</param>
+    /// <param name="h">Homography matrix</param>
+    /// <param name="crop">Selected region</param>
+    /// <returns>Remapped image</returns>
     public static Bitmap WarpImage(BitmapImage image, double[,] h, Point[] crop)
     {
         Point outres = CalcRect(crop); // calculate size of output image
@@ -324,6 +331,14 @@ public static class Quad
         return output; // return the warped and interpolated output image
     }
 
+    /// <summary>
+    /// Get ARGB value from pixel coordinate
+    /// </summary>
+    /// <param name="pixelData">Array of pixel information</param>
+    /// <param name="image">Input image</param>
+    /// <param name="x">X coordinate</param>
+    /// <param name="y">Y coordinate</param>
+    /// <returns>ARGB color</returns>
     private static Color GetArgb(byte[] pixelData, WriteableBitmap image, int x, int y)
     {
         try
