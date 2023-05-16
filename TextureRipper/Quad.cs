@@ -70,7 +70,7 @@ public static class Quad
     /// </summary>
     /// <param name="points">The points to be mapped.</param>
     /// <returns>The size of the rectangle.</returns>
-    public static Point CalcRect(Point[] points) // calculate rectangle to map the points to
+    private static Point CalcRect(Point[] points) // calculate rectangle to map the points to
     {                                            // returns (width, height)
 
         var topLength = Point.Subtract(points[0], points[1]).Length > Point.Subtract(points[3], points[2]).Length ? Point.Subtract(points[3], points[2]).Length : Point.Subtract(points[0], points[1]).Length;
@@ -281,13 +281,13 @@ public static class Quad
     /// <returns>Remapped image</returns>
     public static Bitmap WarpImage(BitmapImage image, double[,] h, Point[] crop)
     {
-        Point outres = CalcRect(crop); // calculate size of output image
+        Point outRes = CalcRect(crop); // calculate size of output image
         WriteableBitmap bitmapSource = new WriteableBitmap(image); // convert to WriteableBitmap to pull color values
 
         byte[] pixelData = new byte[bitmapSource.PixelWidth * bitmapSource.PixelHeight * 4]; // array of pixel colors BGRA32 format
         bitmapSource.CopyPixels(pixelData, bitmapSource.PixelWidth * 4, 0); // put pixel data on array
 
-        Bitmap output = new Bitmap((int)outres.X, (int)outres.Y); // output bitmap
+        Bitmap output = new Bitmap((int)outRes.X, (int)outRes.Y); // output bitmap
 
         for (var y = 0; y < output.Height; y++) // loop through each pixel in output image
         {

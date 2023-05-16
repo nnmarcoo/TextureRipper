@@ -35,36 +35,9 @@ namespace TextureRipper
         private readonly SolidColorBrush _lineStroke = new SolidColorBrush(Color.FromArgb(255, 255, 0, 0)); // refactored to avoid SOH
         private readonly DoubleCollection _strokeDashArray = new DoubleCollection() { 3, 1 }; // refactored to avoid SOH
 
-        private string? _debugH;
-
         public MainWindow()
         {
             InitializeComponent();
-        }
-
-        public bool IsDraggingPoint // todo broken
-        {
-            get { return _isDraggingPoint; }
-            set
-            {
-                if (_isDraggingPoint != value)
-                {
-                    _isDraggingPoint = value;
-
-                    // Code to execute after the value changes
-                    // Replace this with your desired code
-                    if (_isDraggingPoint)
-                    {
-                        MessageBox.Show("isDraggingPoint changed to true.");
-                        // Execute additional actions
-                    }
-                    else
-                    {
-                        MessageBox.Show("isDraggingPoint changed to false.");
-                        // Execute additional actions
-                    }
-                }
-            }
         }
 
         private void InitializeCanvas(string filename)
@@ -329,9 +302,24 @@ namespace TextureRipper
             _selectedPoint?.ReleaseMouseCapture();
         }
 
-        private void DrawQuads() // todo fix bug: when UNDO called, incorrect lines deleted / not turned off
-        {                        // fix is: in the if, turn off those lines
-            if (Canvas.Children.OfType<Rectangle>().Count() < 4) return; // todo ensure enough lines exist for every 4 points, otherwise add more and remove extra?
+        private void DrawQuads()
+        {
+            
+            
+            var linesToRemove = Canvas.Children.OfType<Line>().ToList(); // hide extra lines
+            if (Canvas.Children.OfType<Rectangle>().Count() % 4 != 0)
+                for (int i = Canvas.Children.OfType<Rectangle>().Count() -
+                             Canvas.Children.OfType<Rectangle>().Count() % 4;
+                     i < Canvas.Children.OfType<Rectangle>().Count();
+                     i++)
+                {
+                    linesToRemove[i].X1 = 0;
+                    linesToRemove[i].Y1 = 0;
+                    linesToRemove[i].X2 = 0;
+                    linesToRemove[i].Y2 = 0;
+                }
+            
+            if (Canvas.Children.OfType<Rectangle>().Count() < 4) return;
 
             var points = Canvas.Children.OfType<Rectangle>().ToList();
             var lines = Canvas.Children.OfType<Line>().ToList();
@@ -346,21 +334,8 @@ namespace TextureRipper
                     new (Canvas.GetLeft(points[i + 2]), Canvas.GetTop(points[i + 2])),
                     new (Canvas.GetLeft(points[i + 3]), Canvas.GetTop(points[i + 3]))
                 });
-
-                if (!_isDraggingPoint && _selectedPoint == null)
-                {
-                    UpdateEverything();
-                    Point[] remappedPoints =
-                        Quad.RemapCoords(new Point(Canvas.GetLeft(SourceImage), Canvas.GetTop(SourceImage)), quad,
-                            SourceImage.ActualWidth, SourceImage.ActualHeight, _file!.Width, _file.Height);
-
-                    // todo why does this edit the visible lines??
-                    var h = Quad.CalcH(remappedPoints);
-
-                    _bitmap = Quad.WarpImage(_file, h, remappedPoints);
-                }
-
-                for (var j = 0; j < 4; j++)
+                
+                for (var j = 0; j < 4; j++) // draw quad
                 {
                     var lineIndex = i + j;
 
@@ -369,6 +344,16 @@ namespace TextureRipper
                     lines[lineIndex].X2 = quad[(j + 1) % 4].X;
                     lines[lineIndex].Y2 = quad[(j + 1) % 4].Y;
                 }
+
+                UpdateEverything();
+                Point[] remappedPoints =
+                    Quad.RemapCoords(new Point(Canvas.GetLeft(SourceImage), Canvas.GetTop(SourceImage)), quad,
+                        SourceImage.ActualWidth, SourceImage.ActualHeight, _file!.Width, _file.Height);
+                
+                var h = Quad.CalcH(remappedPoints);
+
+                _bitmap = Quad.WarpImage(_file, h, remappedPoints);
+                
             }
         }
 
@@ -451,7 +436,7 @@ namespace TextureRipper
 
         private void DisplayWarnings()
         {
-            var warning = _debugH + "\n";
+            var warning = "";
 
             if (Canvas.Children.OfType<Rectangle>().Count() > 19)
                 warning += "Performance mode on\n";
