@@ -1,8 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -27,13 +27,17 @@ namespace TextureRipper
         private BitmapImage? _file;
         private Bitmap? _bitmap;
         
+        private List<Bitmap> _bitmaps = new();
+        private List<Point[]> _toBeCalculated = new();
+        
+        
         private Point _dragMouseOrigin; // for panning
         private Point _lastMousePosition; // for dragging point
         private bool _isDraggingPoint;
         private Rectangle? _selectedPoint;
         
-        private readonly SolidColorBrush _lineStroke = new SolidColorBrush(Color.FromArgb(255, 255, 0, 0)); // refactored to avoid SOH
-        private readonly DoubleCollection _strokeDashArray = new DoubleCollection() { 3, 1 }; // refactored to avoid SOH
+        private readonly SolidColorBrush _lineStroke = new(Color.FromArgb(255, 255, 0, 0)); // refactored to avoid SOH
+        private readonly DoubleCollection _strokeDashArray = new() { 3, 1 }; // refactored to avoid SOH
 
         public MainWindow()
         {
@@ -265,15 +269,15 @@ namespace TextureRipper
                 Line line = new Line // Create a new line element
                 {
                     Stroke = _lineStroke,
-                    StrokeThickness = 2,
+                    StrokeThickness = 1.5,
                     StrokeDashArray = _strokeDashArray
                 };
                 Canvas.Children.Add(line);
-
+                
                 Rectangle point = new Rectangle // Create a new rectangle element
                 {
-                    
-                    Width = 30,
+                    Name = "a" + Canvas.Children.OfType<Rectangle>().Count()+1.ToString(), // Name property requires name begin with alphanumeric character.. botched using this to track points
+                    Width = 30,                                                          // the "a" is removed later in Name to track which quad is being adjusted
                     Height = 30,
                     StrokeThickness = 1,
                     Stroke = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#f04747")),
@@ -304,11 +308,9 @@ namespace TextureRipper
 
         private void DrawQuads()
         {
-            
-            
             var linesToRemove = Canvas.Children.OfType<Line>().ToList(); // hide extra lines
             if (Canvas.Children.OfType<Rectangle>().Count() % 4 != 0)
-                for (int i = Canvas.Children.OfType<Rectangle>().Count() -
+                for (var i = Canvas.Children.OfType<Rectangle>().Count() -
                              Canvas.Children.OfType<Rectangle>().Count() % 4;
                      i < Canvas.Children.OfType<Rectangle>().Count();
                      i++)
@@ -344,6 +346,12 @@ namespace TextureRipper
                     lines[lineIndex].X2 = quad[(j + 1) % 4].X;
                     lines[lineIndex].Y2 = quad[(j + 1) % 4].Y;
                 }
+                
+                /*todo
+                 * 1. Divide points into groups of 4
+                 * 2. check if the current selected point was already calculated
+                 * 3. If it was, skip, otherwise calculate it
+                 */
 
                 UpdateEverything();
                 Point[] remappedPoints =
@@ -436,7 +444,7 @@ namespace TextureRipper
 
         private void DisplayWarnings()
         {
-            var warning = "";
+            var warning = _selectedPoint?.Name + "";
 
             if (Canvas.Children.OfType<Rectangle>().Count() > 19)
                 warning += "Performance mode on\n";
