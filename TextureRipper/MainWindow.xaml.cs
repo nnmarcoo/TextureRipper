@@ -276,8 +276,8 @@ namespace TextureRipper
                 
                 Rectangle point = new Rectangle // Create a new rectangle element
                 {
-                    Name = "a" + Canvas.Children.OfType<Rectangle>().Count()+1.ToString(), // Name property requires name begin with alphanumeric character.. botched using this to track points
-                    Width = 30,                                                          // the "a" is removed later in Name to track which quad is being adjusted
+                    Tag = Canvas.Children.OfType<Rectangle>().Count()+1,
+                    Width = 30,
                     Height = 30,
                     StrokeThickness = 1,
                     Stroke = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#f04747")),
