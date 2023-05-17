@@ -353,6 +353,8 @@ namespace TextureRipper
                     Quad.RemapCoords(new Point(Canvas.GetLeft(SourceImage), Canvas.GetTop(SourceImage)), quad,
                         SourceImage.ActualWidth, SourceImage.ActualHeight, _file!.Width, _file.Height);
                 
+                //todo check if remapped points are in dictionary key, if they are, don't bother, other wise ,add it and calculate it
+                
                 var h = Quad.CalcH(remappedPoints);
 
                 _bitmap = Quad.WarpImage(_file, h, remappedPoints);
