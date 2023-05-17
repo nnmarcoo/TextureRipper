@@ -24,11 +24,12 @@ namespace TextureRipper
     /// </summary>
     public partial class MainWindow
     {
+
         private BitmapImage? _file;
         private Bitmap? _bitmap;
         
         private List<Bitmap> _bitmaps = new();
-        private List<Point[]> _toBeCalculated = new();
+        private Dictionary<int, Point[]> _toBeCalculated = new Dictionary<int, Point[]>();
         
         
         private Point _dragMouseOrigin; // for panning
@@ -346,12 +347,6 @@ namespace TextureRipper
                     lines[lineIndex].X2 = quad[(j + 1) % 4].X;
                     lines[lineIndex].Y2 = quad[(j + 1) % 4].Y;
                 }
-                
-                /*todo
-                 * 1. Divide points into groups of 4
-                 * 2. check if the current selected point was already calculated
-                 * 3. If it was, skip, otherwise calculate it
-                 */
 
                 UpdateEverything();
                 Point[] remappedPoints =
@@ -444,7 +439,7 @@ namespace TextureRipper
 
         private void DisplayWarnings()
         {
-            var warning = _selectedPoint?.Name + "";
+            var warning = _selectedPoint?.Tag + "";
 
             if (Canvas.Children.OfType<Rectangle>().Count() > 19)
                 warning += "Performance mode on\n";
