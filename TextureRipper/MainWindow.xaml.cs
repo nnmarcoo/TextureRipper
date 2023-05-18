@@ -322,7 +322,7 @@ namespace TextureRipper
             _selectedPoint?.ReleaseMouseCapture();
         }
 
-        private void DrawQuads() //todo asd
+        private void DrawQuads()
         {
             var linesToRemove = Canvas.Children.OfType<Line>().ToList(); // hide extra lines
             if (Canvas.Children.OfType<Rectangle>().Count() % 4 != 0)
@@ -346,7 +346,7 @@ namespace TextureRipper
             {
                 if (i + 3 >= points.Count) break;
 
-                var quad = Quad.OrderPointsClockwise( new Point[] {
+                var quad = Quad.OrderPointsClockwise( new Point[] { // this solution is wasteful
                     new (Canvas.GetLeft(points[i]), Canvas.GetTop(points[i])),
                     new (Canvas.GetLeft(points[i + 1]), Canvas.GetTop(points[i + 1])),
                     new (Canvas.GetLeft(points[i + 2]), Canvas.GetTop(points[i + 2])),
@@ -387,9 +387,40 @@ namespace TextureRipper
             {
                 _changed = false;
                 SystemSounds.Asterisk.Play();
+                
+                //todo calculate warped image of all images
+                var points = Canvas.Children.OfType<Rectangle>().ToList();
+                
+                for (var i = 0; i < points.Count; i += 4)
+                {
+                    if (i + 3 >= points.Count) break;
+
+                    var quad = Quad.OrderPointsClockwise( new Point[] {
+                        new (Canvas.GetLeft(points[i]), Canvas.GetTop(points[i])),
+                        new (Canvas.GetLeft(points[i + 1]), Canvas.GetTop(points[i + 1])),
+                        new (Canvas.GetLeft(points[i + 2]), Canvas.GetTop(points[i + 2])),
+                        new (Canvas.GetLeft(points[i + 3]), Canvas.GetTop(points[i + 3]))
+                    });
+                    
+                    UpdateEverything();
+                    Point[] remappedPoints =
+                        Quad.RemapCoords(new Point(Canvas.GetLeft(SourceImage), Canvas.GetTop(SourceImage)), quad,
+                            SourceImage.ActualWidth, SourceImage.ActualHeight, _file!.Width, _file.Height);
+                
+                    var h = Quad.CalcH(remappedPoints);
+
+                    _bitmap = Quad.WarpImage(_file, h, remappedPoints);
+                
+                    //_data.Add(remappedPoints,_bitmap);
+                
+                }
+                
+                
+                
+                
+                
+                
             }
-            
-            
             
             _isPanning = false;
             _isZooming = false;
@@ -475,7 +506,7 @@ namespace TextureRipper
 
         private void DisplayWarnings()
         {
-            var warning = _changed + "";
+            var warning = "";
 
             if (Canvas.Children.OfType<Rectangle>().Count() > 19)
                 warning += "Performance mode on\n";
@@ -563,7 +594,7 @@ namespace TextureRipper
             _timer.Start();
         }
 
-        private void TimerElapsed(object sender, ElapsedEventArgs e)
+        private void TimerElapsed(object? sender, ElapsedEventArgs e)
         {
             Dispatcher.Invoke(() => CalculateBitmaps());
         }
