@@ -40,6 +40,7 @@ namespace TextureRipper
         private bool _isZooming;
         private bool _isPanning;
         private bool _isAddingPoint;
+        private bool _changed;
         private Rectangle? _selectedPoint;
         
         private readonly SolidColorBrush _lineStroke = new(Color.FromArgb(255, 255, 0, 0)); // refactored to avoid SOH
@@ -361,9 +362,8 @@ namespace TextureRipper
                     lines[lineIndex].X2 = quad[(j + 1) % 4].X;
                     lines[lineIndex].Y2 = quad[(j + 1) % 4].Y;
                 }
-                
-                
-                //todo check if remapped points are in dictionary key, if they are, don't bother, other wise ,add it and calculate it
+
+                _changed = _isDraggingPoint || _isAddingPoint && Canvas.Children.OfType<Rectangle>().Count() % 4 == 0;
 
                 if (_isDraggingPoint || _isZooming || _isPanning || _isAddingPoint) continue;
                 
@@ -383,8 +383,9 @@ namespace TextureRipper
 
         private void CalculateBitmaps()
         {
-            if (!_isDraggingPoint && !_isZooming && !_isPanning && !_isAddingPoint)
+            if (!_isDraggingPoint && !_isZooming && !_isPanning && !_isAddingPoint && _changed)
             {
+                _changed = false;
                 SystemSounds.Asterisk.Play();
             }
             
@@ -474,7 +475,7 @@ namespace TextureRipper
 
         private void DisplayWarnings()
         {
-            var warning = _selectedPoint?.Tag + "";
+            var warning = _changed + "";
 
             if (Canvas.Children.OfType<Rectangle>().Count() > 19)
                 warning += "Performance mode on\n";
@@ -554,10 +555,10 @@ namespace TextureRipper
         
         
         //TIMER
-        public void StartTimer()
+        private void StartTimer()
         {
-            _timer = new System.Timers.Timer();
-            _timer.Interval = 1000; // Set the interval (in milliseconds) based on your requirements
+            _timer = new Timer();
+            _timer.Interval = 10; // is this dumb?
             _timer.Elapsed += TimerElapsed;
             _timer.Start();
         }
@@ -567,7 +568,7 @@ namespace TextureRipper
             Dispatcher.Invoke(() => CalculateBitmaps());
         }
 
-        public void StopTimer()
+        private void StopTimer()
         {
             _timer?.Stop();
             _timer?.Dispose();
