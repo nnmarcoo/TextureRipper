@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
+using System.Media;
+using System.Timers;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -29,16 +31,21 @@ namespace TextureRipper
         private Bitmap? _bitmap;
         
         private List<Bitmap> _bitmaps = new();
-        private Dictionary<int, Point[]> _toBeCalculated = new Dictionary<int, Point[]>();
+        private Dictionary<Point[], Bitmap> _data = new Dictionary<Point[], Bitmap>();
         
         
         private Point _dragMouseOrigin; // for panning
         private Point _lastMousePosition; // for dragging point
         private bool _isDraggingPoint;
+        private bool _isZooming;
+        private bool _isPanning;
+        private bool _isAddingPoint;
         private Rectangle? _selectedPoint;
         
         private readonly SolidColorBrush _lineStroke = new(Color.FromArgb(255, 255, 0, 0)); // refactored to avoid SOH
         private readonly DoubleCollection _strokeDashArray = new() { 3, 1 }; // refactored to avoid SOH
+        
+        private Timer? _timer;
 
         public MainWindow()
         {
@@ -59,6 +66,8 @@ namespace TextureRipper
             CenterImage(SourceImage);
 
             SourceImage.SetValue(RenderOptions.BitmapScalingModeProperty, BitmapScalingMode.NearestNeighbor);
+            
+            StartTimer();
         }
         
         //BUTTONS
@@ -103,10 +112,12 @@ namespace TextureRipper
         
         private void SaveButtonClick(object sender, RoutedEventArgs e)
         {
-            SaveFileDialog dialog = new SaveFileDialog();
-            dialog.Filter = "PNG Image|*.png|JPEG Image|*.jpg|Bitmap Image|*.bmp";
-            dialog.Title = "Save Image";
-            dialog.FileName = "image.png"; // Default file name
+            SaveFileDialog dialog = new SaveFileDialog
+            {
+                Filter = "PNG Image|*.png|JPEG Image|*.jpg|Bitmap Image|*.bmp",
+                Title = "Save Image",
+                FileName = "image.png" // Default file name
+            };
             var result = dialog.ShowDialog();
             if (result != true) return;
             
@@ -190,6 +201,7 @@ namespace TextureRipper
 
         private void CanvasOnDragOver(object sender, DragEventArgs e)
         {
+            _isPanning = true;
             Point dropPosition = e.GetPosition(Canvas);
             
             //translate image
@@ -204,7 +216,7 @@ namespace TextureRipper
             }
             _dragMouseOrigin = dropPosition;
 
-            if (Canvas.Children.OfType<Rectangle>().Count() < 20)
+            //if (Canvas.Children.OfType<Rectangle>().Count() < 20)
                 DrawQuads();
             DisplayWarnings();
         }
@@ -214,6 +226,7 @@ namespace TextureRipper
             if (_file == null) return;
             if ((SourceImage.ActualWidth * (e.Delta < 0 ? 0.7 : 1.3)) > (4 * ActualWidth) || 
                 (SourceImage.ActualWidth * (e.Delta < 0 ? 0.7 : 1.3)) < (0.1 * ActualWidth)) return;
+            _isZooming = true;
 
             var zoom = e.Delta < 0 ? 0.7 : 1.3;
 
@@ -258,7 +271,7 @@ namespace TextureRipper
         {
             if (_file == null) return;
 
-            if (e.OriginalSource is Rectangle source) // if clicking on a rectangle
+            if (e.OriginalSource is Rectangle source) // if clicking on a rectangle (dragging)
             {
                 _selectedPoint = source;
                 _lastMousePosition = e.GetPosition(Canvas);
@@ -267,6 +280,7 @@ namespace TextureRipper
             }
             else
             {
+                _isAddingPoint = true;
                 Line line = new Line // Create a new line element
                 {
                     Stroke = _lineStroke,
@@ -307,7 +321,7 @@ namespace TextureRipper
             _selectedPoint?.ReleaseMouseCapture();
         }
 
-        private void DrawQuads()
+        private void DrawQuads() //todo asd
         {
             var linesToRemove = Canvas.Children.OfType<Line>().ToList(); // hide extra lines
             if (Canvas.Children.OfType<Rectangle>().Count() % 4 != 0)
@@ -347,19 +361,38 @@ namespace TextureRipper
                     lines[lineIndex].X2 = quad[(j + 1) % 4].X;
                     lines[lineIndex].Y2 = quad[(j + 1) % 4].Y;
                 }
+                
+                
+                //todo check if remapped points are in dictionary key, if they are, don't bother, other wise ,add it and calculate it
 
+                if (_isDraggingPoint || _isZooming || _isPanning || _isAddingPoint) continue;
+                
                 UpdateEverything();
                 Point[] remappedPoints =
                     Quad.RemapCoords(new Point(Canvas.GetLeft(SourceImage), Canvas.GetTop(SourceImage)), quad,
                         SourceImage.ActualWidth, SourceImage.ActualHeight, _file!.Width, _file.Height);
                 
-                //todo check if remapped points are in dictionary key, if they are, don't bother, other wise ,add it and calculate it
-                
                 var h = Quad.CalcH(remappedPoints);
 
                 _bitmap = Quad.WarpImage(_file, h, remappedPoints);
                 
+                //_data.Add(remappedPoints,_bitmap);
+                
             }
+        }
+
+        private void CalculateBitmaps()
+        {
+            if (!_isDraggingPoint && !_isZooming && !_isPanning && !_isAddingPoint)
+            {
+                SystemSounds.Asterisk.Play();
+            }
+            
+            
+            
+            _isPanning = false;
+            _isZooming = false;
+            _isAddingPoint = false;
         }
 
         private void PointMouseEnter(object sender, MouseEventArgs e)
@@ -517,6 +550,28 @@ namespace TextureRipper
                 FileName = "https://github.com/nnmarcoo",
                 UseShellExecute = true
             });
+        }
+        
+        
+        //TIMER
+        public void StartTimer()
+        {
+            _timer = new System.Timers.Timer();
+            _timer.Interval = 1000; // Set the interval (in milliseconds) based on your requirements
+            _timer.Elapsed += TimerElapsed;
+            _timer.Start();
+        }
+
+        private void TimerElapsed(object sender, ElapsedEventArgs e)
+        {
+            Dispatcher.Invoke(() => CalculateBitmaps());
+        }
+
+        public void StopTimer()
+        {
+            _timer?.Stop();
+            _timer?.Dispose();
+            _timer = null;
         }
     }
 }
