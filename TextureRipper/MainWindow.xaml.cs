@@ -30,8 +30,7 @@ namespace TextureRipper
         private BitmapImage? _file;
         private Bitmap? _bitmap;
         
-        private List<Bitmap> _bitmaps = new();
-        private Dictionary<Point[], Bitmap> _data = new Dictionary<Point[], Bitmap>();
+        private Dictionary<int, Bitmap> _data = new Dictionary<int, Bitmap>();
         
         
         private Point _dragMouseOrigin; // for panning
@@ -401,27 +400,23 @@ namespace TextureRipper
                         new (Canvas.GetLeft(points[i + 2]), Canvas.GetTop(points[i + 2])),
                         new (Canvas.GetLeft(points[i + 3]), Canvas.GetTop(points[i + 3]))
                     });
-                    
-                    UpdateEverything();
-                    Point[] remappedPoints =
-                        Quad.RemapCoords(new Point(Canvas.GetLeft(SourceImage), Canvas.GetTop(SourceImage)), quad,
-                            SourceImage.ActualWidth, SourceImage.ActualHeight, _file!.Width, _file.Height);
-                
-                    var h = Quad.CalcH(remappedPoints);
 
-                    _bitmap = Quad.WarpImage(_file, h, remappedPoints);
-                
-                    //_data.Add(remappedPoints,_bitmap);
-                
+                    if (!_data.ContainsKey((int)(_selectedPoint?.Tag ?? 0)))
+                    {
+                        UpdateEverything();
+                        Point[] remappedPoints =
+                            Quad.RemapCoords(new Point(Canvas.GetLeft(SourceImage), Canvas.GetTop(SourceImage)), quad,
+                                SourceImage.ActualWidth, SourceImage.ActualHeight, _file!.Width, _file.Height);
+
+                        var h = Quad.CalcH(remappedPoints);
+
+                        _bitmap = Quad.WarpImage(_file, h, remappedPoints);
+
+                        _data.Add((int)(_selectedPoint?.Tag ?? 0),_bitmap);
+                    }
+
                 }
-                
-                
-                
-                
-                
-                
             }
-            
             _isPanning = false;
             _isZooming = false;
             _isAddingPoint = false;
