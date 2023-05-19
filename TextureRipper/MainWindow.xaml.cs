@@ -5,6 +5,7 @@ using System.Drawing;
 using System.Linq;
 using System.Media;
 using System.Text;
+using System.Threading;
 using System.Timers;
 using System.Windows;
 using System.Windows.Controls;
@@ -19,6 +20,7 @@ using ColorConverter = System.Windows.Media.ColorConverter;
 using Path = System.IO.Path;
 using Point = System.Windows.Point;
 using Rectangle = System.Windows.Shapes.Rectangle;
+using Timer = System.Timers.Timer;
 
 namespace TextureRipper
 {
@@ -27,25 +29,23 @@ namespace TextureRipper
     /// </summary>
     public partial class MainWindow
     {
-
         private BitmapImage? _file;
-
-        private HashSet<Bitmap> _data = new();
-
-
+        private readonly HashSet<Bitmap> _data = new();
+        
         private Point _dragMouseOrigin; // for panning
         private Point _lastMousePosition; // for dragging point
         private bool _isDraggingPoint;
         private bool _isZooming;
         private bool _isPanning;
         private bool _isAddingPoint;
-        private bool _changed;
+        private bool _changed; // a quad has been changed
         private Rectangle? _selectedPoint;
         
         private readonly SolidColorBrush _lineStroke = new(Color.FromArgb(255, 255, 0, 0)); // refactored to avoid SOH
         private readonly DoubleCollection _strokeDashArray = new() { 3, 1 }; // refactored to avoid SOH
         
         private Timer? _timer;
+        private CancellationTokenSource _tokenSource = null;
 
         public MainWindow()
         {
@@ -92,7 +92,6 @@ namespace TextureRipper
         {
             if (_file == null) return;
             
-            
             _file = null;
             SourceImage.Source = null;
             
@@ -108,6 +107,7 @@ namespace TextureRipper
         private void ExitButtonClick(object sender, RoutedEventArgs e)
         {
             //Application.Current.Shutdown();
+            StopTimer();
             Window.Close();
         }
         
@@ -125,35 +125,13 @@ namespace TextureRipper
 
             foreach (var bitmap in _data)
             {
-                string extension = Path.GetExtension(dialog.FileName); // Get the selected file extension
-                string fileName = $"{dialog.FileName}_{i}{extension}"; // Construct the filename with incremented value
+                string extension = Path.GetExtension(dialog.FileName);
+                string fileName = $"{dialog.FileName}_{i}{extension}";
 
                 bitmap.Save(fileName);
                 i++;
             }
         }
-
-        
-        static string ConvertSetToString<T>(HashSet<T> set) // debug
-        {
-            StringBuilder sb = new StringBuilder();
-
-            sb.Append("{ ");
-
-            foreach (T item in set)
-            {
-                sb.Append(item.ToString());
-                sb.Append(", ");
-            }
-
-            if (set.Count > 0)
-                sb.Length -= 2;
-
-            sb.Append(" }");
-
-            return sb.ToString();
-        }
-        
 
         private void DragWindow(object sender, MouseButtonEventArgs e)
         {
@@ -319,7 +297,7 @@ namespace TextureRipper
                 
                 Rectangle point = new Rectangle // Create a new rectangle element
                 {
-                    Tag = Canvas.Children.OfType<Rectangle>().Count()+1,
+                    //Tag = Canvas.Children.OfType<Rectangle>().Count()+1,
                     Width = 30,
                     Height = 30,
                     StrokeThickness = 1,
@@ -510,7 +488,7 @@ namespace TextureRipper
 
         private void DisplayWarnings()
         {
-            var warning = _selectedPoint?.Tag + "";
+            var warning = "";
 
             if (Canvas.Children.OfType<Rectangle>().Count() > 19)
                 warning += "Performance mode on\n";
@@ -593,7 +571,7 @@ namespace TextureRipper
         private void StartTimer()
         {
             _timer = new Timer();
-            _timer.Interval = 100; // is this dumb?
+            _timer.Interval = 10; // is this dumb?
             _timer.Elapsed += TimerElapsed;
             _timer.Start();
         }
