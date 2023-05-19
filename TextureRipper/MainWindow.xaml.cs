@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Media;
+using System.Text;
 using System.Timers;
 using System.Windows;
 using System.Windows.Controls;
@@ -28,11 +29,10 @@ namespace TextureRipper
     {
 
         private BitmapImage? _file;
-        private Bitmap? _bitmap;
-        
-        private Dictionary<int, Bitmap> _data = new Dictionary<int, Bitmap>();
-        
-        
+
+        private HashSet<Bitmap> _data = new();
+
+
         private Point _dragMouseOrigin; // for panning
         private Point _lastMousePosition; // for dragging point
         private bool _isDraggingPoint;
@@ -99,6 +99,7 @@ namespace TextureRipper
             FileImage.Visibility = Visibility.Visible;
             FileText.Visibility = Visibility.Visible;
             
+            _data.Clear();
             DeleteAllPoints();
             DeleteAllLines();
             DisplayWarnings();
@@ -112,20 +113,47 @@ namespace TextureRipper
         
         private void SaveButtonClick(object sender, RoutedEventArgs e)
         {
+            int i = 0;
             SaveFileDialog dialog = new SaveFileDialog
             {
                 Filter = "PNG Image|*.png|JPEG Image|*.jpg|Bitmap Image|*.bmp",
                 Title = "Save Image",
-                FileName = "image.png" // Default file name
+                FileName = "image" // Default file name without extension
             };
             var result = dialog.ShowDialog();
-            if (result != true) return;
-            
-            if (_bitmap != null)
-                _bitmap.Save(dialog.FileName);
-            
-            
+            if (result != true || _data.Count == 0) return;
+
+            foreach (var bitmap in _data)
+            {
+                string extension = Path.GetExtension(dialog.FileName); // Get the selected file extension
+                string fileName = $"{dialog.FileName}_{i}{extension}"; // Construct the filename with incremented value
+
+                bitmap.Save(fileName);
+                i++;
+            }
         }
+
+        
+        static string ConvertSetToString<T>(HashSet<T> set) // debug
+        {
+            StringBuilder sb = new StringBuilder();
+
+            sb.Append("{ ");
+
+            foreach (T item in set)
+            {
+                sb.Append(item.ToString());
+                sb.Append(", ");
+            }
+
+            if (set.Count > 0)
+                sb.Length -= 2;
+
+            sb.Append(" }");
+
+            return sb.ToString();
+        }
+        
 
         private void DragWindow(object sender, MouseButtonEventArgs e)
         {
@@ -361,22 +389,7 @@ namespace TextureRipper
                     lines[lineIndex].X2 = quad[(j + 1) % 4].X;
                     lines[lineIndex].Y2 = quad[(j + 1) % 4].Y;
                 }
-
                 _changed = _isDraggingPoint || _isAddingPoint && Canvas.Children.OfType<Rectangle>().Count() % 4 == 0;
-
-                if (_isDraggingPoint || _isZooming || _isPanning || _isAddingPoint) continue;
-                
-                UpdateEverything();
-                Point[] remappedPoints =
-                    Quad.RemapCoords(new Point(Canvas.GetLeft(SourceImage), Canvas.GetTop(SourceImage)), quad,
-                        SourceImage.ActualWidth, SourceImage.ActualHeight, _file!.Width, _file.Height);
-                
-                var h = Quad.CalcH(remappedPoints);
-
-                _bitmap = Quad.WarpImage(_file, h, remappedPoints);
-                
-                //_data.Add(remappedPoints,_bitmap);
-                
             }
         }
 
@@ -384,9 +397,10 @@ namespace TextureRipper
         {
             if (!_isDraggingPoint && !_isZooming && !_isPanning && !_isAddingPoint && _changed)
             {
+                SystemSounds.Asterisk.Play(); // debug
                 _changed = false;
-                SystemSounds.Asterisk.Play();
-                
+                _data.Clear(); // bad solution
+
                 //todo calculate warped image of all images
                 var points = Canvas.Children.OfType<Rectangle>().ToList();
                 
@@ -400,21 +414,16 @@ namespace TextureRipper
                         new (Canvas.GetLeft(points[i + 2]), Canvas.GetTop(points[i + 2])),
                         new (Canvas.GetLeft(points[i + 3]), Canvas.GetTop(points[i + 3]))
                     });
+                        
+                    UpdateEverything();
+                    Point[] remappedPoints =
+                        Quad.RemapCoords(new Point(Canvas.GetLeft(SourceImage), Canvas.GetTop(SourceImage)), quad,
+                            SourceImage.ActualWidth, SourceImage.ActualHeight, _file!.Width, _file.Height);
 
-                    if (!_data.ContainsKey((int)(_selectedPoint?.Tag ?? 0)))
-                    {
-                        UpdateEverything();
-                        Point[] remappedPoints =
-                            Quad.RemapCoords(new Point(Canvas.GetLeft(SourceImage), Canvas.GetTop(SourceImage)), quad,
-                                SourceImage.ActualWidth, SourceImage.ActualHeight, _file!.Width, _file.Height);
+                    var h = Quad.CalcH(remappedPoints);
 
-                        var h = Quad.CalcH(remappedPoints);
-
-                        _bitmap = Quad.WarpImage(_file, h, remappedPoints);
-
-                        _data.Add((int)(_selectedPoint?.Tag ?? 0),_bitmap);
-                    }
-
+                    _data.Add(Quad.WarpImage(_file, h, remappedPoints));
+                    
                 }
             }
             _isPanning = false;
@@ -501,7 +510,7 @@ namespace TextureRipper
 
         private void DisplayWarnings()
         {
-            var warning = "";
+            var warning = _selectedPoint?.Tag + "";
 
             if (Canvas.Children.OfType<Rectangle>().Count() > 19)
                 warning += "Performance mode on\n";
@@ -584,7 +593,7 @@ namespace TextureRipper
         private void StartTimer()
         {
             _timer = new Timer();
-            _timer.Interval = 10; // is this dumb?
+            _timer.Interval = 100; // is this dumb?
             _timer.Elapsed += TimerElapsed;
             _timer.Start();
         }
