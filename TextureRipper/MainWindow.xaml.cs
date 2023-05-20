@@ -45,7 +45,6 @@ namespace TextureRipper
         private readonly DoubleCollection _strokeDashArray = new() { 3, 1 }; // refactored to avoid SOH
         
         private Timer? _timer;
-        private CancellationTokenSource _tokenSource = null;
 
         public MainWindow()
         {
@@ -534,6 +533,7 @@ namespace TextureRipper
                 {
                     Canvas.Children.Remove(points.Last());
                     Canvas.Children.Remove(lines.Last());
+                    CalculateBitmaps();
                     DrawQuads();
                 }
             }
