@@ -4,8 +4,6 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Media;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
 using System.Windows;
@@ -28,7 +26,7 @@ namespace TextureRipper
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow
+    public partial class MainWindow //todo make a class to store the bitmaps?
     {
         private BitmapImage? _file;
         private readonly HashSet<Bitmap> _data = new();
@@ -371,15 +369,14 @@ namespace TextureRipper
             }
         }
 
-        private async void CalculateBitmaps()
+        private async void CalculateBitmaps() // todo optimize to only update the changed images, use dict?
         {
             if (!_isDraggingPoint && !_isZooming && !_isPanning && !_isAddingPoint && _changed)
             {
                 SystemSounds.Asterisk.Play(); // debug
                 _changed = false;
                 _data.Clear(); // bad solution
-
-                //todo calculate warped image of all images
+                
                 var points = Canvas.Children.OfType<Rectangle>().ToList();
                 
                 for (var i = 0; i < points.Count; i += 4)
@@ -579,7 +576,7 @@ namespace TextureRipper
 
         private void TimerElapsed(object? sender, ElapsedEventArgs e)
         {
-            Dispatcher.Invoke(() => CalculateBitmaps());
+            Dispatcher.Invoke(CalculateBitmaps);
         }
 
         private void StopTimer()

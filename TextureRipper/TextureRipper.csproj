@@ -8,11 +8,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <Folder Include="Core\" />
-      <Folder Include="Theme\" />
-    </ItemGroup>
-
-    <ItemGroup>
       <Resource Include="Images\exit.png" />
       <Resource Include="Images\grid.png" />
       <Resource Include="Images\line.png" />
