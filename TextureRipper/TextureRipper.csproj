@@ -30,20 +30,4 @@
       <PackageReference Include="System.Drawing.Common" Version="8.0.0-preview.2.23128.3" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Compile Remove="MVVM\**" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <EmbeddedResource Remove="MVVM\**" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Page Remove="MVVM\**" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <None Remove="MVVM\**" />
-    </ItemGroup>
-
 </Project>

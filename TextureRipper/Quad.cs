@@ -2,6 +2,8 @@
 using System.Windows.Media.Imaging;
 using Point = System.Windows.Point;
 using System.Drawing;
+using System.Windows;
+using System.Windows.Threading;
 
 namespace TextureRipper;
 
@@ -282,7 +284,13 @@ public static class Quad
     public static Bitmap WarpImage(BitmapImage image, double[,] h, Point[] crop)
     {
         Point outRes = CalcRect(crop); // calculate size of output image
-        WriteableBitmap bitmapSource = new WriteableBitmap(image); // convert to WriteableBitmap to pull color values
+        
+        WriteableBitmap bitmapSource = null!; // can't be null because parameter
+        Application.Current.Dispatcher.Invoke(() => // async solution to create a copy so I don't get the error, "other thread owns it"
+        {
+            bitmapSource = new WriteableBitmap(image); // Create a new BitmapImage with the same source
+            bitmapSource.Freeze(); // Freeze the copy to ensure it can be accessed from another thread
+        });
 
         byte[] pixelData = new byte[bitmapSource.PixelWidth * bitmapSource.PixelHeight * 4]; // array of pixel colors BGRA32 format
         bitmapSource.CopyPixels(pixelData, bitmapSource.PixelWidth * 4, 0); // put pixel data on array

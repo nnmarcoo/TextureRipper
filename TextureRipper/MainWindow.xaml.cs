@@ -6,6 +6,7 @@ using System.Linq;
 using System.Media;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Timers;
 using System.Windows;
 using System.Windows.Controls;
@@ -370,7 +371,7 @@ namespace TextureRipper
             }
         }
 
-        private void CalculateBitmaps()
+        private async void CalculateBitmaps()
         {
             if (!_isDraggingPoint && !_isZooming && !_isPanning && !_isAddingPoint && _changed)
             {
@@ -398,8 +399,8 @@ namespace TextureRipper
                             SourceImage.ActualWidth, SourceImage.ActualHeight, _file!.Width, _file.Height);
 
                     var h = Quad.CalcH(remappedPoints);
-
-                    _data.Add(Quad.WarpImage(_file, h, remappedPoints));
+                    
+                    await Task.Run( () => _data.Add(Quad.WarpImage(_file, h, remappedPoints)));
                     
                 }
             }
