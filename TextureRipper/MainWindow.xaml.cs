@@ -174,7 +174,6 @@ namespace TextureRipper
                 Canvas.SetTop(_selectedPoint, Canvas.GetTop(_selectedPoint) + deltaY);
 
                 _lastMousePosition = currentPosition;
-                DrawQuads();
             }
             else // if panning image
             {
@@ -202,6 +201,7 @@ namespace TextureRipper
                     }
                 }
             }
+            DrawQuads();
             DisplayWarnings();
         }
 

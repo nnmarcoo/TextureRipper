@@ -3,7 +3,6 @@ using System.Windows.Media.Imaging;
 using Point = System.Windows.Point;
 using System.Drawing;
 using System.Windows;
-using System.Windows.Threading;
 
 namespace TextureRipper;
 
@@ -359,7 +358,7 @@ public static class Quad
         }
         catch
         {
-            return Color.DeepPink;
+            return Color.Black; // something went wrong
         }
     }
 }
