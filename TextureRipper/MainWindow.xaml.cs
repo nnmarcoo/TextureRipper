@@ -375,17 +375,11 @@ namespace TextureRipper
         {
             if (!_isDraggingPoint && !_isZooming && !_isPanning && !_isAddingPoint && _changed)
             {
-                if (_tokenSource != null)
-                    _tokenSource.Cancel();
-                
-                //SystemSounds.Asterisk.Play(); // debug
+                _tokenSource?.Cancel(); // if it's running, cancel it before running again
                 _tokenSource = new CancellationTokenSource();
                 var token = _tokenSource.Token;
-
-
-
                 _changed = false;
-                _data.Clear(); // bad solution
+                _data.Clear(); // bad solution todo change this
                 
                 var points = Canvas.Children.OfType<Rectangle>().ToList();
                 
@@ -404,16 +398,13 @@ namespace TextureRipper
                     Point[] remappedPoints =
                         Quad.RemapCoords(new Point(Canvas.GetLeft(SourceImage), Canvas.GetTop(SourceImage)), quad,
                             SourceImage.ActualWidth, SourceImage.ActualHeight, _file!.Width, _file.Height);
-
-                    var h = Quad.CalcH(remappedPoints);
-
                     try
                     {
-                        await Task.Run(() => _data.Add(Quad.WarpImage(_file, h, remappedPoints, token)), token);
+                        await Task.Run(() => _data.Add(Quad.WarpImage(_file, Quad.CalcH(remappedPoints), remappedPoints, token)), token);
                     }
-                    catch (OperationCanceledException e)
+                    catch (OperationCanceledException)
                     {
-                        //todo update progress bar
+                        //todo update progress
                     }
                 }
             }

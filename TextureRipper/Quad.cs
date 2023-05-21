@@ -302,7 +302,7 @@ public static class Quad
         {
             for (var x = 0; x < output.Width; x++)
             {
-                if (token.IsCancellationRequested)
+                if (token.IsCancellationRequested) //poll for cancellation
                     token.ThrowIfCancellationRequested();
                 
                 double[,] invH = AInverse(h); // invert transformation matrix because we need to compute the corresponding location in the original image from the warped image location
