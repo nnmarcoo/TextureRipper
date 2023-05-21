@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
-using System.Media;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
 using System.Windows;
@@ -44,6 +44,7 @@ namespace TextureRipper
         private readonly DoubleCollection _strokeDashArray = new() { 3, 1 }; // refactored to avoid SOH
         
         private Timer? _timer;
+        private CancellationTokenSource? _tokenSource;
 
         public MainWindow()
         {
@@ -106,6 +107,7 @@ namespace TextureRipper
         {
             //Application.Current.Shutdown();
             StopTimer();
+            _tokenSource?.Dispose();
             Window.Close();
         }
         
@@ -373,7 +375,15 @@ namespace TextureRipper
         {
             if (!_isDraggingPoint && !_isZooming && !_isPanning && !_isAddingPoint && _changed)
             {
-                SystemSounds.Asterisk.Play(); // debug
+                if (_tokenSource != null)
+                    _tokenSource.Cancel();
+                
+                //SystemSounds.Asterisk.Play(); // debug
+                _tokenSource = new CancellationTokenSource();
+                var token = _tokenSource.Token;
+
+
+
                 _changed = false;
                 _data.Clear(); // bad solution
                 
@@ -396,9 +406,15 @@ namespace TextureRipper
                             SourceImage.ActualWidth, SourceImage.ActualHeight, _file!.Width, _file.Height);
 
                     var h = Quad.CalcH(remappedPoints);
-                    
-                    await Task.Run( () => _data.Add(Quad.WarpImage(_file, h, remappedPoints)));
-                    
+
+                    try
+                    {
+                        await Task.Run(() => _data.Add(Quad.WarpImage(_file, h, remappedPoints, token)), token);
+                    }
+                    catch (OperationCanceledException e)
+                    {
+                        //todo update progress bar
+                    }
                 }
             }
             _isPanning = false;

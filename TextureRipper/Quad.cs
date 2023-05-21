@@ -2,6 +2,7 @@
 using System.Windows.Media.Imaging;
 using Point = System.Windows.Point;
 using System.Drawing;
+using System.Threading;
 using System.Windows;
 
 namespace TextureRipper;
@@ -279,8 +280,9 @@ public static class Quad
     /// <param name="image">Input image</param>
     /// <param name="h">Homography matrix</param>
     /// <param name="crop">Selected region</param>
+    /// <param name="token">Cancel</param>
     /// <returns>Remapped image</returns>
-    public static Bitmap WarpImage(BitmapImage image, double[,] h, Point[] crop)
+    public static Bitmap WarpImage(BitmapImage image, double[,] h, Point[] crop, CancellationToken token)
     {
         Point outRes = CalcRect(crop); // calculate size of output image
         
@@ -300,6 +302,9 @@ public static class Quad
         {
             for (var x = 0; x < output.Width; x++)
             {
+                if (token.IsCancellationRequested)
+                    token.ThrowIfCancellationRequested();
+                
                 double[,] invH = AInverse(h); // invert transformation matrix because we need to compute the corresponding location in the original image from the warped image location
                 double[,] pos = MatrixMultiply(invH, new double[,] {{x},{y},{1}}); // transform current pixel position to the original image's position
                 double newX = pos[0, 0] / pos[2, 0]; // divide by homogeneous coordinate to get normalized x coordinate (convert to cartesian)
