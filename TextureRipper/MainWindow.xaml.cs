@@ -29,7 +29,7 @@ namespace TextureRipper
     public partial class MainWindow //todo make a class to store the bitmaps?
     {
         private BitmapImage? _file;
-        private readonly HashSet<Bitmap> _data = new();
+        private readonly HashSet< Bitmap> _data = new();
         
         private Point _dragMouseOrigin; // for panning
         private Point _lastMousePosition; // for dragging point
@@ -113,6 +113,7 @@ namespace TextureRipper
         
         private void SaveButtonClick(object sender, RoutedEventArgs e)
         {
+            if (_data.Count != Canvas.Children.OfType<Rectangle>().Count()/4) return;
             int i = 0;
             SaveFileDialog dialog = new SaveFileDialog
             {
@@ -297,7 +298,7 @@ namespace TextureRipper
                 
                 Rectangle point = new Rectangle // Create a new rectangle element
                 {
-                    //Tag = Canvas.Children.OfType<Rectangle>().Count()+1,
+                    Tag = Canvas.Children.OfType<Rectangle>().Count()+1,
                     Width = 30,
                     Height = 30,
                     StrokeThickness = 1,
@@ -408,6 +409,7 @@ namespace TextureRipper
                     }
                 }
             }
+            
             _isPanning = false;
             _isZooming = false;
             _isAddingPoint = false;
@@ -492,7 +494,7 @@ namespace TextureRipper
 
         private void DisplayWarnings()
         {
-            var warning = "";
+            var warning = _selectedPoint?.Tag + "";
 
             if (Canvas.Children.OfType<Rectangle>().Count() > 19)
                 warning += "Performance mode on\n";
