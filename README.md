@@ -1,6 +1,6 @@
 # TextureRipper
 
-![TextureRipper Logo](TextureRipper/Images/iconirig.png) <!-- Replace "logo.png" with the path to your project's logo -->
+![TextureRipper Logo](TextureRipper/Images/iconorig.png) <!-- Replace "logo.png" with the path to your project's logo -->
 
 TextureRipper is a powerful tool that enables you to select a plane of an image and correct its perspective to face the camera. This tool is particularly useful in various domains such as computer graphics, image processing, and augmented reality.
 
