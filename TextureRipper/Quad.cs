@@ -131,7 +131,7 @@ public static class Quad
     /// </summary>
     /// <param name="a">The matrix to calculate the inverse of.</param>
     /// <returns>The inverse of matrix A.</returns>
-    private static double[,] AInverse(double[,] a) // Gauss-Jordan elimination method todo use a faster method
+    private static double[,] AInverse(double[,] a) // Gauss-Jordan elimination method todo use a faster method (LU decomposition combined with forward and backward substitution?)
     {
         int n = a.GetLength(0);
         double[,] b = new double[n, 2 * n];

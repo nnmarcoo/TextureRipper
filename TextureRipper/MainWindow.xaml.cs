@@ -29,7 +29,7 @@ namespace TextureRipper
     public partial class MainWindow //todo make a class to store the bitmaps?
     {
         private BitmapImage? _file;
-        private readonly HashSet< Bitmap> _data = new();
+        private readonly HashSet<Bitmap> _data = new();
         
         private Point _dragMouseOrigin; // for panning
         private Point _lastMousePosition; // for dragging point
@@ -90,7 +90,7 @@ namespace TextureRipper
         private void ResetButtonClick(object sender, RoutedEventArgs e)
         {
             if (_file == null) return;
-            
+            _file.UriSource = null; // is this necessary
             _file = null;
             SourceImage.Source = null;
             
@@ -386,6 +386,7 @@ namespace TextureRipper
                 
                 for (var i = 0; i < points.Count; i += 4)
                 {
+                    DisplayWarnings();
                     if (i + 3 >= points.Count) break;
 
                     var quad = Quad.OrderPointsClockwise( new Point[] {
@@ -495,9 +496,6 @@ namespace TextureRipper
         private void DisplayWarnings()
         {
             var warning = _selectedPoint?.Tag + "\n";
-
-            if (Canvas.Children.OfType<Rectangle>().Count() > 19)
-                warning += "Performance mode on\n";
 
             warning += MissingPointsFormat();
             warning += CollinearQuadFormat();
