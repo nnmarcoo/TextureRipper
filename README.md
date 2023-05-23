@@ -1,9 +1,9 @@
 # TextureRipper
 
-![GitHub](https://img.shields.io/github/license/your-username/TextureRipper)
-![GitHub release (latest by date)](https://img.shields.io/github/v/release/your-username/TextureRipper)
-![GitHub issues](https://img.shields.io/github/issues/your-username/TextureRipper)
-![GitHub pull requests](https://img.shields.io/github/issues-pr/your-username/TextureRipper)
+![GitHub](https://img.shields.io/github/license/nnmarcoo/TextureRipper)
+![GitHub release (latest by date)](https://img.shields.io/github/v/release/nnmarcoo/TextureRipper)
+![GitHub issues](https://img.shields.io/github/issues/nnmarcoo/TextureRipper)
+![GitHub pull requests](https://img.shields.io/github/issues-pr/nnmarcoo/TextureRipper)
 
 TextureRipper is a tool written in C# using WPF that allows you to select a plane of an image and fix the perspective to face the camera. This tool can be useful in various applications such as computer vision, image processing, and augmented reality.
 
