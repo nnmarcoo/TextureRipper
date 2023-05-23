@@ -1,4 +1,4 @@
-<img src="TextureRipper/Images/iconorig.png" alt="Icon" width="20px" /> # TextureRipper
+# <img src="TextureRipper/Images/iconorig.png" alt="Icon" width="20px" /> TextureRipper
 
 ![GitHub](https://img.shields.io/github/license/nnmarcoo/TextureRipper)
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/nnmarcoo/TextureRipper)
