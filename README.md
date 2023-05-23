@@ -5,7 +5,7 @@
 ![GitHub issues](https://img.shields.io/github/issues/nnmarcoo/TextureRipper)
 ![GitHub pull requests](https://img.shields.io/github/issues-pr/nnmarcoo/TextureRipper)
 
-<img src="TextureRipper/Images/iconorig.png" alt="Icon" width="200px" /> TextureRipper is a tool written in C# using WPF that allows you to select a plane of an image and fix the perspective to face the camera. The purpose of this tool is to rip textures from images that are otherwise unobtainable.
+<img src="TextureRipper/Images/iconorig.png" alt="Icon" width="20px" /> TextureRipper is a tool written in C# using WPF that allows you to select a plane of an image and fix the perspective to face the camera. The purpose of this tool is to rip textures from images that are otherwise unobtainable.
 
 ## Features
 
