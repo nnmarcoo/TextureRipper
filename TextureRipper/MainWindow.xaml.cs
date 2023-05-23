@@ -107,7 +107,7 @@ namespace TextureRipper
         {
             //Application.Current.Shutdown();
             StopTimer();
-            _tokenSource?.Dispose();
+            _tokenSource?.Dispose(); // should this be somewhere else
             Window.Close();
         }
         
@@ -398,7 +398,7 @@ namespace TextureRipper
                     UpdateEverything();
                     Point[] remappedPoints =
                         Quad.RemapCoords(new Point(Canvas.GetLeft(SourceImage), Canvas.GetTop(SourceImage)), quad,
-                            SourceImage.ActualWidth, SourceImage.ActualHeight, _file!.Width, _file.Height);
+                            SourceImage.ActualWidth, SourceImage.ActualHeight, _file!.PixelWidth, _file.PixelHeight);
                     try
                     {
                         await Task.Run(() => _data.Add(Quad.WarpImage(_file, Quad.CalcH(remappedPoints), remappedPoints, token)), token);
@@ -494,7 +494,7 @@ namespace TextureRipper
 
         private void DisplayWarnings()
         {
-            var warning = _selectedPoint?.Tag + "";
+            var warning = _selectedPoint?.Tag + "\n";
 
             if (Canvas.Children.OfType<Rectangle>().Count() > 19)
                 warning += "Performance mode on\n";
