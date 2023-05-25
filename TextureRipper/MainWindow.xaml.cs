@@ -115,7 +115,7 @@ namespace TextureRipper
         
         private void SaveButtonClick(object sender, RoutedEventArgs e)
         {
-            //if (_data.Count != Canvas.Children.OfType<Rectangle>().Count()/4) return;
+            if (_data.Count != Canvas.Children.OfType<Rectangle>().Count()/4) return;
             int i = 0;
             SaveFileDialog dialog = new SaveFileDialog
             {
@@ -392,11 +392,8 @@ namespace TextureRipper
 
                 for (var i = 0; i < points.Count; i += 4)
                 {
-                    var iterationQuad = i == 0 ? 1 : (i+4)/4;
-                    _debug = iterationQuad + "\n" + selectedQuad;
-                    
                     if (i + 3 >= points.Count) break;
-                    if (iterationQuad != selectedQuad) continue;
+                    if ((i == 0 ? 1 : (i+4)/4) != selectedQuad) continue;
                     
                     var quad = Quad.OrderPointsClockwise(new Point[]
                     {
@@ -413,7 +410,6 @@ namespace TextureRipper
                             _file.PixelHeight);
                     try
                     {
-                        DisplayWarnings();
                         await Task.Run(
                             () => _data[selectedQuad] = Quad.WarpImage(_file, Quad.CalcH(remappedPoints),
                                 remappedPoints, token), token);
