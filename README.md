@@ -20,7 +20,10 @@ wip
 
 ## Getting Started
 
-wip
+1. Drag/drop or select an image to work with
+2. Left click to place points on the image
+3. Right click to pan the image
+4. Save button to output the result
 
 ## Usage
 
