@@ -382,8 +382,7 @@ namespace TextureRipper
                 _tokenSource = new CancellationTokenSource();
                 var token = _tokenSource.Token;
                 _changed = false;
-                //_data.Clear(); // bad solution todo change this
-                
+
                 var points = Canvas.Children.OfType<Rectangle>().ToList();
 
                 var selectedQuad = (_selectedPoint != null)
@@ -549,7 +548,7 @@ namespace TextureRipper
                 {
                     Canvas.Children.Remove(points.Last());
                     Canvas.Children.Remove(lines.Last());
-                    CalculateBitmaps();
+                    _data.Remove((int)Math.Ceiling(points.Count / 4.0));
                     DrawQuads();
                 }
             }
