@@ -29,7 +29,7 @@ namespace TextureRipper
     public partial class MainWindow //todo make a class to store the bitmaps?
     {
         private BitmapImage? _file;
-        private readonly HashSet<Bitmap> _data = new();
+        private readonly Dictionary<int, Bitmap> _data = new();
         
         private Point _dragMouseOrigin; // for panning
         private Point _lastMousePosition; // for dragging point
@@ -45,6 +45,8 @@ namespace TextureRipper
         
         private Timer? _timer;
         private CancellationTokenSource? _tokenSource;
+
+        private String? _debug;
 
         public MainWindow()
         {
@@ -113,7 +115,7 @@ namespace TextureRipper
         
         private void SaveButtonClick(object sender, RoutedEventArgs e)
         {
-            if (_data.Count != Canvas.Children.OfType<Rectangle>().Count()/4) return;
+            //if (_data.Count != Canvas.Children.OfType<Rectangle>().Count()/4) return;
             int i = 0;
             SaveFileDialog dialog = new SaveFileDialog
             {
@@ -129,7 +131,7 @@ namespace TextureRipper
                 string extension = Path.GetExtension(dialog.FileName);
                 string fileName = $"{dialog.FileName}_{i}{extension}";
 
-                bitmap.Save(fileName);
+                bitmap.Value.Save(fileName);
                 i++;
             }
         }
@@ -380,42 +382,49 @@ namespace TextureRipper
                 _tokenSource = new CancellationTokenSource();
                 var token = _tokenSource.Token;
                 _changed = false;
-                _data.Clear(); // bad solution todo change this
+                //_data.Clear(); // bad solution todo change this
                 
                 var points = Canvas.Children.OfType<Rectangle>().ToList();
 
                 var selectedQuad = (_selectedPoint != null)
-                    ? Math.Ceiling((double)(int)_selectedPoint.Tag / 4)
-                    : Math.Ceiling((double)points.Count / 4);
-                
+                    ? (int)Math.Ceiling((double)(int)_selectedPoint.Tag / 4)
+                    : (int)Math.Ceiling((double)points.Count / 4);
 
                 for (var i = 0; i < points.Count; i += 4)
                 {
-                    DisplayWarnings();
+                    var iterationQuad = i == 0 ? 1 : (i+4)/4;
+                    _debug = iterationQuad + "\n" + selectedQuad;
+                    
                     if (i + 3 >= points.Count) break;
-
-                    var quad = Quad.OrderPointsClockwise( new Point[] {
-                        new (Canvas.GetLeft(points[i]), Canvas.GetTop(points[i])),
-                        new (Canvas.GetLeft(points[i + 1]), Canvas.GetTop(points[i + 1])),
-                        new (Canvas.GetLeft(points[i + 2]), Canvas.GetTop(points[i + 2])),
-                        new (Canvas.GetLeft(points[i + 3]), Canvas.GetTop(points[i + 3]))
+                    if (iterationQuad != selectedQuad) continue;
+                    
+                    var quad = Quad.OrderPointsClockwise(new Point[]
+                    {
+                        new(Canvas.GetLeft(points[i]), Canvas.GetTop(points[i])),
+                        new(Canvas.GetLeft(points[i + 1]), Canvas.GetTop(points[i + 1])),
+                        new(Canvas.GetLeft(points[i + 2]), Canvas.GetTop(points[i + 2])),
+                        new(Canvas.GetLeft(points[i + 3]), Canvas.GetTop(points[i + 3]))
                     });
-                        
+
                     UpdateEverything();
                     Point[] remappedPoints =
                         Quad.RemapCoords(new Point(Canvas.GetLeft(SourceImage), Canvas.GetTop(SourceImage)), quad,
-                            SourceImage.ActualWidth, SourceImage.ActualHeight, _file!.PixelWidth, _file.PixelHeight);
+                            SourceImage.ActualWidth, SourceImage.ActualHeight, _file!.PixelWidth,
+                            _file.PixelHeight);
                     try
                     {
-                        await Task.Run(() => _data.Add(Quad.WarpImage(_file, Quad.CalcH(remappedPoints), remappedPoints, token)), token);
+                        DisplayWarnings();
+                        await Task.Run(
+                            () => _data[selectedQuad] = Quad.WarpImage(_file, Quad.CalcH(remappedPoints),
+                                remappedPoints, token), token);
                     }
                     catch (OperationCanceledException)
                     {
                         //todo update progress
                     }
+                    break;
                 }
             }
-            
             _isPanning = false;
             _isZooming = false;
             _isAddingPoint = false;
@@ -424,6 +433,7 @@ namespace TextureRipper
         private void PointMouseEnter(object sender, MouseEventArgs e)
         {
             Mouse.OverrideCursor = Cursors.SizeAll;
+            
         }
 
         private void PointMouseLeave(object sender, MouseEventArgs e)
@@ -500,11 +510,7 @@ namespace TextureRipper
 
         private void DisplayWarnings()
         {
-            var selectedQuad = (_selectedPoint != null)
-                    ? Math.Ceiling((double)(int)_selectedPoint.Tag / 4)
-                    : Math.Ceiling((double)Canvas.Children.OfType<Rectangle>().Count() / 4);
-                
-                var warning = selectedQuad + "\n";
+            var warning = _debug + "\n";
 
                 warning += MissingPointsFormat();
                 warning += CollinearQuadFormat();
