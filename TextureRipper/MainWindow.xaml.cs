@@ -383,7 +383,12 @@ namespace TextureRipper
                 _data.Clear(); // bad solution todo change this
                 
                 var points = Canvas.Children.OfType<Rectangle>().ToList();
+
+                var selectedQuad = (_selectedPoint != null)
+                    ? Math.Ceiling((double)(int)_selectedPoint.Tag / 4)
+                    : Math.Ceiling((double)points.Count / 4);
                 
+
                 for (var i = 0; i < points.Count; i += 4)
                 {
                     DisplayWarnings();
@@ -495,13 +500,17 @@ namespace TextureRipper
 
         private void DisplayWarnings()
         {
-            var warning = _selectedPoint?.Tag + "\n";
+            var selectedQuad = (_selectedPoint != null)
+                    ? Math.Ceiling((double)(int)_selectedPoint.Tag / 4)
+                    : Math.Ceiling((double)Canvas.Children.OfType<Rectangle>().Count() / 4);
+                
+                var warning = selectedQuad + "\n";
 
-            warning += MissingPointsFormat();
-            warning += CollinearQuadFormat();
-            warning += InvalidNumPointsFormat();
+                warning += MissingPointsFormat();
+                warning += CollinearQuadFormat();
+                warning += InvalidNumPointsFormat();
 
-            Warning.Text = warning;
+                Warning.Text = warning;
         }
 
 
