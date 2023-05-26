@@ -19,8 +19,8 @@
         <FontFamily x:Key="Font" >/Fonts/#Louis George Cafe</FontFamily>
         
         <Style x:Key="ProgressBarStyle" TargetType="{x:Type ProgressBar}">
-            <Setter Property="Background" Value="#7289da"/>
-            <Setter Property="Height" Value="2"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Height" Value="6"/>
             <Setter Property="VerticalAlignment" Value="Bottom"/>
             <Setter Property="BorderThickness" Value="0"/>
         </Style>
@@ -136,6 +136,7 @@
                            Margin="8,8,0,0"
                            />
                 <TextBlock x:Name="Info"
+                           Visibility="Hidden"
                            Background="Transparent"
                            HorizontalAlignment="Left"
                            VerticalAlignment="Bottom"

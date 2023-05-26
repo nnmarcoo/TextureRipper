@@ -409,15 +409,6 @@ namespace TextureRipper
                             _file.PixelHeight);
                     try
                     {
-                        DoubleAnimation heightAnimation = new DoubleAnimation
-                        {
-                            From = ProgressBar.Height,
-                            To = 6,
-                            Duration = TimeSpan.FromSeconds(0.3),
-                            EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseInOut },
-                        };
-                        ProgressBar.BeginAnimation(HeightProperty, heightAnimation);
-                        
                         var progress = new Progress<int>(value => { ProgressBar.Value = value; });
                         await Task.Run(
                             () => _data[selectedQuad] = Quad.WarpImage(_file, Quad.CalcH(remappedPoints),
@@ -429,14 +420,6 @@ namespace TextureRipper
                     }
                     finally
                     {
-                        DoubleAnimation heightAnimation = new DoubleAnimation
-                        {
-                            From = ProgressBar.Height,
-                            To = 2,
-                            Duration = TimeSpan.FromSeconds(0.5),
-                            EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseInOut },
-                        };
-                        ProgressBar.BeginAnimation(HeightProperty, heightAnimation);
                         ProgressBar.Value = 0;
                     }
                     break;
