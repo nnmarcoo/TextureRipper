@@ -13,7 +13,7 @@ public class BuildBitmap
         _inBitmaps = inBitmaps;
     }
 
-    public BuildBitmap()
+    public BuildBitmap() // Default
     {
         
     }
@@ -23,4 +23,18 @@ public class BuildBitmap
         _outBitmap.Dispose();
     }
 
+    public void AddBitmap(Bitmap bitmap)
+    {
+        _inBitmaps.Add(bitmap);
+    }
+
+    public void ClearBitmaps()
+    {
+        _inBitmaps.Clear();
+    }
+
+    public int CalcOutDim()
+    {
+        return -1;
+    }
 }
