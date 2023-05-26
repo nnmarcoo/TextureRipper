@@ -26,7 +26,7 @@ namespace TextureRipper
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow //todo make a class to store the bitmaps?
+    public partial class MainWindow //todo reorder the points as they're added instead of repeating the calculation
     {
         private BitmapImage? _file;
         private readonly Dictionary<int, Bitmap> _data = new();
@@ -45,8 +45,6 @@ namespace TextureRipper
         
         private Timer? _timer;
         private CancellationTokenSource? _tokenSource;
-
-        private String? _debug;
 
         public MainWindow()
         {
@@ -510,7 +508,7 @@ namespace TextureRipper
 
         private void DisplayWarnings()
         {
-            var warning = _debug + "\n";
+            var warning = "";
 
                 warning += MissingPointsFormat();
                 warning += CollinearQuadFormat();
