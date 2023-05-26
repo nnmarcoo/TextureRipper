@@ -392,7 +392,7 @@ namespace TextureRipper
                 for (var i = 0; i < points.Count; i += 4)
                 {
                     if (i + 3 >= points.Count) break;
-                    if ((i == 0 ? 1 : (i+4)/4) != selectedQuad) continue;
+                    if ((i == 0 ? 1 : (i+4)/4) != selectedQuad) continue; // iterationQuad != selectedQuad
                     
                     var quad = Quad.OrderPointsClockwise(new Point[]
                     {
@@ -409,13 +409,35 @@ namespace TextureRipper
                             _file.PixelHeight);
                     try
                     {
+                        DoubleAnimation heightAnimation = new DoubleAnimation
+                        {
+                            From = ProgressBar.Height,
+                            To = 6,
+                            Duration = TimeSpan.FromSeconds(0.3),
+                            EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseInOut },
+                        };
+                        ProgressBar.BeginAnimation(HeightProperty, heightAnimation);
+                        
+                        var progress = new Progress<int>(value => { ProgressBar.Value = value; });
                         await Task.Run(
                             () => _data[selectedQuad] = Quad.WarpImage(_file, Quad.CalcH(remappedPoints),
-                                remappedPoints, token), token);
+                                remappedPoints, token, progress), token);
                     }
                     catch (OperationCanceledException)
                     {
-                        //todo update progress
+                        //ignored
+                    }
+                    finally
+                    {
+                        DoubleAnimation heightAnimation = new DoubleAnimation
+                        {
+                            From = ProgressBar.Height,
+                            To = 2,
+                            Duration = TimeSpan.FromSeconds(0.5),
+                            EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseInOut },
+                        };
+                        ProgressBar.BeginAnimation(HeightProperty, heightAnimation);
+                        ProgressBar.Value = 0;
                     }
                     break;
                 }

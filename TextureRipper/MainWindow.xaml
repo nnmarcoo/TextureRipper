@@ -18,6 +18,13 @@
     <Window.Resources>
         <FontFamily x:Key="Font" >/Fonts/#Louis George Cafe</FontFamily>
         
+        <Style x:Key="ProgressBarStyle" TargetType="{x:Type ProgressBar}">
+            <Setter Property="Background" Value="#7289da"/>
+            <Setter Property="Height" Value="2"/>
+            <Setter Property="VerticalAlignment" Value="Bottom"/>
+            <Setter Property="BorderThickness" Value="0"/>
+        </Style>
+        
         <Style TargetType="Button">
             <Setter Property="Background" Value="#2c2f33" />
             <Setter Property="Foreground" Value="White" />
@@ -57,7 +64,6 @@
                              From="1.0" To="0.0"
                              Duration="0:0:1" />
         </Storyboard>
-        
     </Window.Resources>
     
     <Grid>
@@ -220,5 +226,10 @@
                 </Button>
             </Grid>
         </Border>
+        <ProgressBar
+            Grid.Row="1"
+            Style="{StaticResource ProgressBarStyle}"
+            x:Name="ProgressBar"
+            Foreground="#2ecc71"/>
     </Grid>
 </Window>

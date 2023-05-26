@@ -282,7 +282,7 @@ public static class Quad
     /// <param name="crop">Selected region</param>
     /// <param name="token">Cancel</param>
     /// <returns>Remapped image</returns>
-    public static Bitmap WarpImage(BitmapImage image, double[,] h, Point[] crop, CancellationToken token)
+    public static Bitmap WarpImage(BitmapImage image, double[,] h, Point[] crop, CancellationToken token, IProgress<int> progress)
     {
         Point outRes = CalcRect(crop); // calculate size of output image
         
@@ -339,6 +339,7 @@ public static class Quad
                     output.SetPixel(x, y, Color.FromArgb(r, g, b)); // set color of current pixel in output image
                 }
             }
+            progress.Report((y + 1) * 100 / output.Height);
         }
         return output; // return the warped and interpolated output image
     }
