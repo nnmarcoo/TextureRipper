@@ -281,6 +281,7 @@ public static class Quad
     /// <param name="h">Homography matrix</param>
     /// <param name="crop">Selected region</param>
     /// <param name="token">Cancel</param>
+    /// <param name="progress">Track progress</param>
     /// <returns>Remapped image</returns>
     public static Bitmap WarpImage(BitmapImage image, double[,] h, Point[] crop, CancellationToken token, IProgress<int> progress)
     {

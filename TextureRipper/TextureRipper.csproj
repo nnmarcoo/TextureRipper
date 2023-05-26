@@ -25,4 +25,13 @@
       <PackageReference Include="System.Drawing.Common" Version="8.0.0-preview.2.23128.3" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Compile Update="BuildBitmap.cs">
+        <DependentUpon>MainWindow.xaml.cs</DependentUpon>
+      </Compile>
+      <Compile Update="Quad.cs">
+        <DependentUpon>MainWindow.xaml.cs</DependentUpon>
+      </Compile>
+    </ItemGroup>
+
 </Project>

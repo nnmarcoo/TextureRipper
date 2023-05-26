@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
@@ -129,7 +130,15 @@ namespace TextureRipper
                 string extension = Path.GetExtension(dialog.FileName);
                 string fileName = $"{dialog.FileName}_{i}{extension}";
 
-                bitmap.Value.Save(fileName);
+                try // temporary
+                {
+                    bitmap.Value.Save(fileName);
+                }
+                catch (ExternalException)
+                {
+                    // ignored
+                }
+
                 i++;
             }
         }
@@ -598,6 +607,7 @@ namespace TextureRipper
         {
             Dispatcher.Invoke(CalculateBitmaps);
         }
+
 
         private void StopTimer()
         {
