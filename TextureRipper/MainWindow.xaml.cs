@@ -581,7 +581,7 @@ namespace TextureRipper
 
             // Trigger the animation
             e.Cancel = true;
-            this.BeginAnimation(UIElement.OpacityProperty, opacityAnimation);
+            BeginAnimation(OpacityProperty, opacityAnimation);
         }
 
         private void InfoButtonClick(object sender, RoutedEventArgs e)

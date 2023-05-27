@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Drawing;
+using System.Runtime.Intrinsics.X86;
 
 namespace TextureRipper;
 
@@ -11,6 +12,20 @@ public class BuildBitmap
     public BuildBitmap(HashSet<Bitmap> inBitmaps)
     {
         _inBitmaps = inBitmaps;
+        _outBitmap = CalcOutBitmap();
+    }
+
+    private Bitmap CalcOutBitmap()
+    {
+        var dim = CalcOutDim();
+        Bitmap outBitmap = new Bitmap(dim.X, dim.Y);
+
+        foreach (var bitmap in _inBitmaps)
+        {
+            using Graphics g = Graphics.FromImage(outBitmap);
+            g.DrawImage(bitmap, new Point(0,0));
+        }
+        return outBitmap;
     }
 
     public BuildBitmap() // Default
@@ -33,8 +48,14 @@ public class BuildBitmap
         _inBitmaps.Clear();
     }
 
-    public int CalcOutDim()
+    private Point CalcOutDim() //todo add margin
     {
-        return -1;
+        var dim = new Point();
+        foreach (var bitmap in _inBitmaps)
+        {
+            dim.X += bitmap.Width;
+            dim.Y += bitmap.Height;
+        }
+        return dim;
     }
 }
