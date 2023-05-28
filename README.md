@@ -16,7 +16,11 @@ TextureRipper is a tool written in C# using WPF that allows you to select a plan
 
 ## Screenshots
 
-wip
+<details>
+  <summary>Click to expand</summary>
+  
+  ![Steep Sign](TextureRipper/images/steepsign.png)
+</details>
 
 ## Usage
 
