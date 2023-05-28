@@ -24,3 +24,4 @@ wip
 - Left click to place/drag a point
 - Right click to pan the image
 - Scroll to zoom
+- Press the top left save button to output the corrected selections
