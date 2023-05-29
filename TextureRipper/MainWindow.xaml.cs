@@ -43,6 +43,7 @@ namespace TextureRipper
         private bool _isAddingPoint;
         private bool _changed; // a quad has been changed
         private Rectangle? _selectedPoint;
+        private int _previewCycle = 1;
         
         private readonly SolidColorBrush _lineStroke = new(Color.FromArgb(255, 255, 0, 0)); // refactored to avoid SOH
         private readonly DoubleCollection _strokeDashArray = new() { 3, 1 }; // refactored to avoid SOH
@@ -445,22 +446,22 @@ namespace TextureRipper
         {
             if (_data.Values.FirstOrDefault() == null) return;
             
-            PreviewImage.Source = BitmapToImageSource(_data.Values.FirstOrDefault());
+            PreviewImage.Source = BitmapToBitmapSource(_data[_previewCycle]);
             PreviewImage.Height = Canvas.ActualHeight / 4;
+            
+            GC.Collect();
         }
 
-        private static BitmapImage BitmapToImageSource(Bitmap bitmap) // this uses so much memory
+        private static BitmapSource BitmapToBitmapSource(Bitmap bitmap)
         {
             using MemoryStream memory = new MemoryStream();
             bitmap.Save(memory, ImageFormat.Bmp);
             memory.Position = 0;
-            BitmapImage bitmapImage = new BitmapImage();
-            bitmapImage.BeginInit();
-            bitmapImage.StreamSource = memory;
-            bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
-            bitmapImage.EndInit();
-
-            return bitmapImage;
+            
+            BitmapDecoder decoder = BitmapDecoder.Create(memory, BitmapCreateOptions.None, BitmapCacheOption.OnLoad);
+            BitmapSource bitmapSource = decoder.Frames[0];
+            
+            return bitmapSource;
         }
 
 
