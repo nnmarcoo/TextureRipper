@@ -58,12 +58,6 @@
                 </Setter.Value>
             </Setter>
         </Style>
-        
-        <Storyboard x:Key="ShutdownAnimation">
-            <DoubleAnimation Storyboard.TargetProperty="Opacity"
-                             From="1.0" To="0.0"
-                             Duration="0:0:1" />
-        </Storyboard>
     </Window.Resources>
     
     <Grid>
@@ -105,7 +99,19 @@
                         x:Name="SourceImage"
                         MouseRightButtonDown="CanvasMouseRightButtonDown"
                         MouseMove="CanvasMouseMove"/>
+                    
                 </Canvas>
+                
+                <Image
+                    x:Name="PreviewImage"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Bottom"
+                    MouseRightButtonDown="CanvasMouseRightButtonDown"
+                    MouseLeftButtonDown="ManipulatePoint"
+                    MouseLeftButtonUp="DragPoint"
+                    MouseMove="CanvasMouseMove"
+                    DragOver="CanvasOnDragOver"
+                    MouseWheel="ZoomImage"/>
                 
                 <Image Source="images/file.png"
                        x:Name="FileImage"

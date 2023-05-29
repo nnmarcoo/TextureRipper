@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
+using System.Drawing.Imaging;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -10,6 +12,7 @@ using System.Timers;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
@@ -435,7 +438,32 @@ namespace TextureRipper
             _isPanning = false;
             _isZooming = false;
             _isAddingPoint = false;
+            UpdatePreview();
         }
+
+        private void UpdatePreview()
+        {
+            if (_data.Values.FirstOrDefault() != null)
+            {
+                PreviewImage.Source = BitmapToImageSource(_data.Values.FirstOrDefault());
+                PreviewImage.Height = Canvas.ActualHeight / 4;
+            }
+        }
+
+        BitmapImage BitmapToImageSource(Bitmap bitmap)
+        {
+            using MemoryStream memory = new MemoryStream();
+            bitmap.Save(memory, System.Drawing.Imaging.ImageFormat.Bmp);
+            memory.Position = 0;
+            BitmapImage bitmapimage = new BitmapImage();
+            bitmapimage.BeginInit();
+            bitmapimage.StreamSource = memory;
+            bitmapimage.CacheOption = BitmapCacheOption.OnLoad;
+            bitmapimage.EndInit();
+
+            return bitmapimage;
+        }
+
 
         private void PointMouseEnter(object sender, MouseEventArgs e)
         {
