@@ -443,25 +443,24 @@ namespace TextureRipper
 
         private void UpdatePreview()
         {
-            if (_data.Values.FirstOrDefault() != null)
-            {
-                PreviewImage.Source = BitmapToImageSource(_data.Values.FirstOrDefault());
-                PreviewImage.Height = Canvas.ActualHeight / 4;
-            }
+            if (_data.Values.FirstOrDefault() == null) return;
+            
+            PreviewImage.Source = BitmapToImageSource(_data.Values.FirstOrDefault());
+            PreviewImage.Height = Canvas.ActualHeight / 4;
         }
 
-        BitmapImage BitmapToImageSource(Bitmap bitmap)
+        private static BitmapImage BitmapToImageSource(Bitmap bitmap) // this uses so much memory
         {
             using MemoryStream memory = new MemoryStream();
-            bitmap.Save(memory, System.Drawing.Imaging.ImageFormat.Bmp);
+            bitmap.Save(memory, ImageFormat.Bmp);
             memory.Position = 0;
-            BitmapImage bitmapimage = new BitmapImage();
-            bitmapimage.BeginInit();
-            bitmapimage.StreamSource = memory;
-            bitmapimage.CacheOption = BitmapCacheOption.OnLoad;
-            bitmapimage.EndInit();
+            BitmapImage bitmapImage = new BitmapImage();
+            bitmapImage.BeginInit();
+            bitmapImage.StreamSource = memory;
+            bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+            bitmapImage.EndInit();
 
-            return bitmapimage;
+            return bitmapImage;
         }
 
 
