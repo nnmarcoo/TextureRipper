@@ -29,7 +29,7 @@ namespace TextureRipper
     /// Interaction logic for MainWindow.xaml
     /// </summary>
     public partial class MainWindow //todo reorder the points as they're added instead of repeating the calculation
-    {
+    {                               //todo change the dictionary to int, customObj so that it can store the BitmapImage too
         private BitmapImage? _file;
         private readonly Dictionary<int, Bitmap> _data = new();
         
@@ -438,6 +438,7 @@ namespace TextureRipper
             _isPanning = false;
             _isZooming = false;
             _isAddingPoint = false;
+            
             UpdatePreview();
         }
 
