@@ -29,7 +29,7 @@ namespace TextureRipper
     /// Interaction logic for MainWindow.xaml
     /// </summary>
     public partial class MainWindow //todo reorder the points as they're added instead of repeating the calculation
-    {                               //todo change the dictionary to int, customObj so that it can store the BitmapImage too
+    {
         private BitmapImage? _file;
         private readonly Dictionary<int, Bitmap> _data = new();
         
@@ -68,6 +68,7 @@ namespace TextureRipper
             CenterImage(SourceImage);
 
             SourceImage.SetValue(RenderOptions.BitmapScalingModeProperty, BitmapScalingMode.NearestNeighbor);
+            PreviewImage.SetValue(RenderOptions.BitmapScalingModeProperty, BitmapScalingMode.NearestNeighbor);
             
             StartTimer();
         }
@@ -398,6 +399,7 @@ namespace TextureRipper
                 var selectedQuad = (_selectedPoint != null)
                     ? (int)Math.Ceiling((double)(int)_selectedPoint.Tag / 4)
                     : (int)Math.Ceiling((double)points.Count / 4);
+                _previewCycle = selectedQuad;
 
                 for (var i = 0; i < points.Count; i += 4)
                 {
@@ -439,7 +441,6 @@ namespace TextureRipper
             _isPanning = false;
             _isZooming = false;
             _isAddingPoint = false;
-            
         }
 
         private void UpdatePreview()
@@ -454,13 +455,11 @@ namespace TextureRipper
 
         private static BitmapSource BitmapToBitmapSource(Bitmap bitmap)
         {
-            BitmapSource bitmapSource = Imaging.CreateBitmapSourceFromHBitmap(
+            return Imaging.CreateBitmapSourceFromHBitmap(
                 bitmap.GetHbitmap(),
                 IntPtr.Zero,
                 Int32Rect.Empty,
                 BitmapSizeOptions.FromEmptyOptions());
-
-            return bitmapSource;
         }
 
         private void PointMouseEnter(object sender, MouseEventArgs e)
@@ -590,20 +589,24 @@ namespace TextureRipper
                     DrawQuads();
                 }
             }
-            if (e.Key == Key.C) Info.Visibility = Info.IsVisible ? Visibility.Collapsed : Visibility.Visible;
+            else if (e.Key == Key.C) Info.Visibility = Info.IsVisible ? Visibility.Collapsed : Visibility.Visible;
             
-            if (e.Key == Key.Q) // is this inefficient?
+            else if (e.Key == Key.Q) // is this inefficient?
+            {
                 if (_previewCycle != 1)
                     _previewCycle--;
                 else
                     _previewCycle = _data.Count;
-            if (e.Key == Key.E)
+                UpdatePreview();
+            }
+            else if (e.Key == Key.E)
+            {
                 if (_previewCycle != _data.Count)
                     _previewCycle++;
                 else
                     _previewCycle = 1;
-
-            UpdatePreview();
+                UpdatePreview();
+            }
             DisplayWarnings();
         }
 
@@ -646,8 +649,7 @@ namespace TextureRipper
         {
             Dispatcher.Invoke(CalculateBitmaps);
         }
-
-
+        
         private void StopTimer()
         {
             _timer?.Stop();
