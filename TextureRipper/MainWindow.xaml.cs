@@ -432,6 +432,7 @@ namespace TextureRipper
                     {
                         ProgressBar.Value = 0;
                     }
+                    UpdatePreview();
                     break;
                 }
             }
@@ -439,7 +440,6 @@ namespace TextureRipper
             _isZooming = false;
             _isAddingPoint = false;
             
-            UpdatePreview();
         }
 
         private void UpdatePreview()
@@ -590,19 +590,20 @@ namespace TextureRipper
                     DrawQuads();
                 }
             }
-            else if (e.Key == Key.C) Info.Visibility = Info.IsVisible ? Visibility.Collapsed : Visibility.Visible;
+            if (e.Key == Key.C) Info.Visibility = Info.IsVisible ? Visibility.Collapsed : Visibility.Visible;
             
-            else if (e.Key == Key.Q) // is this inefficient?
+            if (e.Key == Key.Q) // is this inefficient?
                 if (_previewCycle != 1)
                     _previewCycle--;
                 else
                     _previewCycle = _data.Count;
-            else if (e.Key == Key.E)
+            if (e.Key == Key.E)
                 if (_previewCycle != _data.Count)
                     _previewCycle++;
                 else
                     _previewCycle = 1;
 
+            UpdatePreview();
             DisplayWarnings();
         }
 
