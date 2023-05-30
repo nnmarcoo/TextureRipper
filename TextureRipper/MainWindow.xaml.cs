@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
-using System.Drawing.Imaging;
-using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -101,7 +99,8 @@ namespace TextureRipper
             
             FileImage.Visibility = Visibility.Visible;
             FileText.Visibility = Visibility.Visible;
-            
+            PreviewImage.Source = null;
+
             _data.Clear();
             DeleteAllPoints();
             DeleteAllLines();
@@ -385,7 +384,7 @@ namespace TextureRipper
             }
         }
 
-        private async void CalculateBitmaps() // todo optimize to only update the changed images, use dict?
+        private async void CalculateBitmaps()
         {
             if (!_isDraggingPoint && !_isZooming && !_isPanning && !_isAddingPoint && _changed)
             {
@@ -447,23 +446,21 @@ namespace TextureRipper
             if (_data.Values.FirstOrDefault() == null) return;
             
             PreviewImage.Source = BitmapToBitmapSource(_data[_previewCycle]);
-            PreviewImage.Height = Canvas.ActualHeight / 4;
-            
-            GC.Collect();
+            PreviewImage.Height = Canvas.ActualHeight / 3;
+
+            GC.Collect(); // is this even doing anything
         }
 
         private static BitmapSource BitmapToBitmapSource(Bitmap bitmap)
         {
-            using MemoryStream memory = new MemoryStream();
-            bitmap.Save(memory, ImageFormat.Bmp);
-            memory.Position = 0;
-            
-            BitmapDecoder decoder = BitmapDecoder.Create(memory, BitmapCreateOptions.None, BitmapCacheOption.OnLoad);
-            BitmapSource bitmapSource = decoder.Frames[0];
-            
+            BitmapSource bitmapSource = Imaging.CreateBitmapSourceFromHBitmap(
+                bitmap.GetHbitmap(),
+                IntPtr.Zero,
+                Int32Rect.Empty,
+                BitmapSizeOptions.FromEmptyOptions());
+
             return bitmapSource;
         }
-
 
         private void PointMouseEnter(object sender, MouseEventArgs e)
         {
@@ -592,7 +589,19 @@ namespace TextureRipper
                     DrawQuads();
                 }
             }
-            if (e.Key == Key.C) Info.Visibility = Info.IsVisible ? Visibility.Collapsed : Visibility.Visible;
+            else if (e.Key == Key.C) Info.Visibility = Info.IsVisible ? Visibility.Collapsed : Visibility.Visible;
+            
+            else if (e.Key == Key.Q) // is this inefficient?
+                if (_previewCycle != 1)
+                    _previewCycle--;
+                else
+                    _previewCycle = _data.Count;
+            else if (e.Key == Key.E)
+                if (_previewCycle != _data.Count)
+                    _previewCycle++;
+                else
+                    _previewCycle = 1;
+
             DisplayWarnings();
         }
 
