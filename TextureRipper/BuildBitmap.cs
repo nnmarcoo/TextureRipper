@@ -1,15 +1,14 @@
 ﻿using System.Collections.Generic;
 using System.Drawing;
-using System.Runtime.Intrinsics.X86;
 
 namespace TextureRipper;
 
 public class BuildBitmap
 {
     private Bitmap _outBitmap;
-    private HashSet<Bitmap> _inBitmaps;
+    private List<Bitmap> _inBitmaps;
 
-    public BuildBitmap(HashSet<Bitmap> inBitmaps)
+    public BuildBitmap(List<Bitmap> inBitmaps)
     {
         _inBitmaps = inBitmaps;
         _outBitmap = CalcOutBitmap();
