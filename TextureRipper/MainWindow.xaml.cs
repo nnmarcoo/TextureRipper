@@ -158,15 +158,16 @@ namespace TextureRipper
             if (_file != null) return;
             if (!e.Data.GetDataPresent(DataFormats.FileDrop)) return;
             
-            string[] files = (string[])e.Data.GetData(DataFormats.FileDrop); // why is this warning
+            var files = (string[]?)e.Data.GetData(DataFormats.FileDrop); // why is this warning
                 
-            if (Path.GetExtension(files[0]).Equals(".png")  ||
+            if (files != null && 
+               (Path.GetExtension(files[0]).Equals(".png")  ||
                 Path.GetExtension(files[0]).Equals(".jpeg") ||
                 Path.GetExtension(files[0]).Equals(".jpg")  ||
                 Path.GetExtension(files[0]).Equals(".tiff") ||
                 Path.GetExtension(files[0]).Equals(".tif")  ||
                 Path.GetExtension(files[0]).Equals(".ico")  ||
-                Path.GetExtension(files[0]).Equals(".jpe")   )
+                Path.GetExtension(files[0]).Equals(".jpe"))  )
                 InitializeCanvas(files[0]);
         }
 

@@ -16,6 +16,8 @@ public class BuildBitmap
 
     private Bitmap CalcOutBitmap()
     {
+        if (_inBitmaps.Count == 1) return _inBitmaps[0];
+        
         var dim = CalcOutDim();
         Bitmap outBitmap = new Bitmap(dim.X, dim.Y);
 
