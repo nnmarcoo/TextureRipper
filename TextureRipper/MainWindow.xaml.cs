@@ -121,30 +121,20 @@ namespace TextureRipper
             if (_data.Count != Canvas.Children.OfType<Rectangle>().Count()/4) return;
             int i = 0;
             SaveFileDialog dialog = new SaveFileDialog
-            {
-                Filter = "PNG Image|*.png|JPEG Image|*.jpg|Bitmap Image|*.bmp",
+            { Filter = "PNG Image|*.png|JPEG Image|*.jpg|Bitmap Image|*.bmp",
                 Title = "Save Image",
                 FileName = "image" // Default file name without extension
             };
             var result = dialog.ShowDialog();
             if (result != true || _data.Count == 0) return;
 
-            foreach (var bitmap in _data)
-            {
-                string extension = Path.GetExtension(dialog.FileName);
-                string fileName = $"{dialog.FileName}_{i}{extension}";
-
-                try // temporary
-                {
-                    bitmap.Value.Save(fileName);
-                }
-                catch (ExternalException)
-                {
-                    // ignored
-                }
-
-                i++;
-            }
+            string extension = Path.GetExtension(dialog.FileName);
+            string fileName = $"{dialog.FileName}_{i}{extension}";
+            
+            BuildBitmap large = new BuildBitmap(new List<Bitmap>(_data.Values));
+            
+            large.OutBitmap.Save(fileName);
+            
         }
 
         private void DragWindow(object sender, MouseButtonEventArgs e)

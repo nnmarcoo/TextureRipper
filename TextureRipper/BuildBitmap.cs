@@ -1,18 +1,20 @@
 ﻿using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 
 namespace TextureRipper;
 
 public class BuildBitmap
 {
-    private Bitmap _outBitmap;
-    private List<Bitmap> _inBitmaps;
+    private readonly List<Bitmap> _inBitmaps;
 
     public BuildBitmap(List<Bitmap> inBitmaps)
     {
         _inBitmaps = inBitmaps;
-        _outBitmap = CalcOutBitmap();
+        OutBitmap = CalcOutBitmap();
     }
+
+    public Bitmap OutBitmap { get; }
 
     private Bitmap CalcOutBitmap()
     {
@@ -20,11 +22,13 @@ public class BuildBitmap
         
         var dim = CalcOutDim();
         Bitmap outBitmap = new Bitmap(dim.X, dim.Y);
+        Point setPos = new Point(0, 0);
 
         foreach (var bitmap in _inBitmaps)
         {
             using Graphics g = Graphics.FromImage(outBitmap);
-            g.DrawImage(bitmap, new Point(0,0));
+            g.DrawImage(bitmap, setPos);
+            setPos.X += bitmap.Width + 5;
         }
         return outBitmap;
     }
@@ -36,7 +40,7 @@ public class BuildBitmap
 
     ~BuildBitmap() // is this necessary?
     {
-        _outBitmap.Dispose();
+        OutBitmap.Dispose();
     }
 
     public void AddBitmap(Bitmap bitmap)
@@ -55,8 +59,10 @@ public class BuildBitmap
         foreach (var bitmap in _inBitmaps)
         {
             dim.X += bitmap.Width;
-            dim.Y += bitmap.Height;
+            dim.X += 5;
         }
+
+        dim.Y = _inBitmaps.Select(bitmap => bitmap.Height).Prepend(0).Max() + 5;
         return dim;
     }
 }
