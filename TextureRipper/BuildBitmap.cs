@@ -4,18 +4,31 @@ using System.Linq;
 
 namespace TextureRipper;
 
+/// <summary>
+/// Class <c>BuildBitmap</c> contains methods to take in multiple bitmaps and neatly combine them into one mosaic bitmap.
+/// </summary>
 public class BuildBitmap
 {
     private readonly List<Bitmap> _inBitmaps;
 
+    /// <summary>
+    /// Constructor.
+    /// </summary>
+    /// <param name="inBitmaps">List of bitmaps to be combined</param>
     public BuildBitmap(List<Bitmap> inBitmaps)
     {
         _inBitmaps = inBitmaps;
         OutBitmap = CalcOutBitmap();
     }
+    /// <summary>
+    /// Getter for the output bitmap.
+    /// </summary>
+    public Bitmap OutBitmap { get; } = null!;
 
-    public Bitmap OutBitmap { get; }
-
+    /// <summary>
+    /// Generates the mosaic bitmap.
+    /// </summary>
+    /// <returns>The calculated mosaic bitmap.</returns>
     private Bitmap CalcOutBitmap()
     {
         if (_inBitmaps.Count == 1) return _inBitmaps[0];
@@ -33,26 +46,41 @@ public class BuildBitmap
         return outBitmap;
     }
 
-    public BuildBitmap() // Default
+    /// <summary>
+    /// Default Constructor. It will initialize an empty list.
+    /// </summary>
+    public BuildBitmap()
     {
-        
+        _inBitmaps = new List<Bitmap>();
     }
-
+    /// <summary>
+    /// Delete the bitmap when object is deleted.
+    /// </summary>
     ~BuildBitmap() // is this necessary?
     {
         OutBitmap.Dispose();
     }
 
+    /// <summary>
+    /// Add a bitmap to the _inBitmaps.
+    /// <param name="bitmap">Desired bitmap.</param>
+    /// </summary>
     public void AddBitmap(Bitmap bitmap)
     {
         _inBitmaps.Add(bitmap);
     }
 
+    /// <summary>
+    /// Delete all bitmaps from the _inBitmaps list.
+    /// </summary>
     public void ClearBitmaps()
     {
         _inBitmaps.Clear();
     }
 
+    /// <summary>
+    /// Calculates the output dimensions of the mosaic bitmap.
+    /// </summary>
     private Point CalcOutDim() //todo add margin
     {
         var dim = new Point();
