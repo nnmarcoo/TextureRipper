@@ -382,7 +382,7 @@ namespace TextureRipper
             }
         }
 
-        private async void CalculateBitmaps(bool skip = false)
+        private async void CalculateBitmaps(bool skip = false) // is this skip param necessary?
         {
             if ((!_isDraggingPoint && !_isZooming && !_isPanning && !_isAddingPoint && _changed) || skip)
             {
@@ -586,22 +586,22 @@ namespace TextureRipper
                     DrawQuads();
                 }
             }
-            else if (e.Key == Key.C) Info.Visibility = Info.IsVisible ? Visibility.Collapsed : Visibility.Visible; // if c is pressed
+            else if (e.Key == Key.C) Info.Visibility = Info.IsVisible ? Visibility.Collapsed : Visibility.Visible; // show keybinds
             
-            else if (e.Key is Key.Q or Key.E) // if q or e is pressed
+            else if (e.Key is Key.Q or Key.E) // cycle preview images
             {
                 var increment = (e.Key == Key.E) ? 1 : -1;
                 _previewCycle = (_previewCycle - 1 + increment + _data.Count) % _data.Count + 1;
-                CalculateBitmaps(true);
                 UpdatePreview();
             }
             
-            else if (_selectedPoint != null) // if wasd is pressed
+            else if (_selectedPoint != null) // pixel shift
             {
-                if (e.Key is Key.W) Canvas.SetTop(_selectedPoint, Canvas.GetTop(_selectedPoint) - PxlShift);
-                else if (e.Key is Key.A) Canvas.SetLeft(_selectedPoint, Canvas.GetLeft(_selectedPoint) - PxlShift);
-                else if (e.Key is Key.S) Canvas.SetTop(_selectedPoint, Canvas.GetTop(_selectedPoint) + PxlShift);
-                else if (e.Key is Key.D) Canvas.SetLeft(_selectedPoint, Canvas.GetLeft(_selectedPoint) + PxlShift);
+                if (e.Key is Key.W or Key.Up) Canvas.SetTop(_selectedPoint, Canvas.GetTop(_selectedPoint) - PxlShift);
+                else if (e.Key is Key.A or Key.Left) Canvas.SetLeft(_selectedPoint, Canvas.GetLeft(_selectedPoint) - PxlShift);
+                else if (e.Key is Key.S or Key.Down) Canvas.SetTop(_selectedPoint, Canvas.GetTop(_selectedPoint) + PxlShift);
+                else if (e.Key is Key.D or Key.Right) Canvas.SetLeft(_selectedPoint, Canvas.GetLeft(_selectedPoint) + PxlShift);
+                CalculateBitmaps(true);
                 DrawQuads();
             }
 
