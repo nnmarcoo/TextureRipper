@@ -42,11 +42,14 @@ namespace TextureRipper
         private Rectangle? _selectedPoint;
         private int _previewCycle = 1;
         
-        private readonly SolidColorBrush _lineStroke = new(Color.FromArgb(255, 255, 0, 0)); // refactored to avoid SOH
-        private readonly DoubleCollection _strokeDashArray = new() { 3, 1 }; // refactored to avoid SOH
-        
+        private readonly SolidColorBrush _lineStroke = new(Color.FromArgb(255, 255, 0, 0));
+        private readonly SolidColorBrush _selectedStroke = new(Color.FromArgb(255, 0, 141, 213));
+        private readonly DoubleCollection _strokeDashArray = new() { 3, 1 };
+
         private Timer? _timer;
         private CancellationTokenSource? _tokenSource;
+        
+        private const int PxlShift = 5;
 
         public MainWindow()
         {
@@ -283,10 +286,14 @@ namespace TextureRipper
 
             if (e.OriginalSource is Rectangle source) // if clicking on a rectangle (dragging)
             {
+                if (_selectedPoint != null) _selectedPoint.Stroke = _lineStroke; // reset color
+                
                 _selectedPoint = source;
                 _lastMousePosition = e.GetPosition(Canvas);
                 _isDraggingPoint = true;
                 _selectedPoint?.CaptureMouse();
+
+                if (_selectedPoint != null) _selectedPoint.Stroke = _selectedStroke; // set selected point
             }
             else
             {
@@ -375,9 +382,9 @@ namespace TextureRipper
             }
         }
 
-        private async void CalculateBitmaps()
+        private async void CalculateBitmaps(bool skip = false)
         {
-            if (!_isDraggingPoint && !_isZooming && !_isPanning && !_isAddingPoint && _changed)
+            if ((!_isDraggingPoint && !_isZooming && !_isPanning && !_isAddingPoint && _changed) || skip)
             {
                 _tokenSource?.Cancel(); // if it's running, cancel it before running again
                 _tokenSource = new CancellationTokenSource();
@@ -567,7 +574,7 @@ namespace TextureRipper
         //WINDOW CONTROL
         private void MainWindow_OnPreviewKeyDown(object sender, KeyEventArgs e)
         {
-            if (e.Key == Key.Z && Keyboard.Modifiers == ModifierKeys.Control) // undo
+            if (e.Key == Key.Z && Keyboard.Modifiers == ModifierKeys.Control) // ctrl + z // undo
             {
                 var points = Canvas.Children.OfType<Rectangle>().ToList();
                 var lines = Canvas.Children.OfType<Line>().ToList();
@@ -579,24 +586,25 @@ namespace TextureRipper
                     DrawQuads();
                 }
             }
-            else if (e.Key == Key.C) Info.Visibility = Info.IsVisible ? Visibility.Collapsed : Visibility.Visible;
+            else if (e.Key == Key.C) Info.Visibility = Info.IsVisible ? Visibility.Collapsed : Visibility.Visible; // if c is pressed
             
-            else if (e.Key == Key.Q) // is this inefficient?
+            else if (e.Key is Key.Q or Key.E) // if q or e is pressed
             {
-                if (_previewCycle != 1)
-                    _previewCycle--;
-                else
-                    _previewCycle = _data.Count;
+                var increment = (e.Key == Key.E) ? 1 : -1;
+                _previewCycle = (_previewCycle - 1 + increment + _data.Count) % _data.Count + 1;
+                CalculateBitmaps(true);
                 UpdatePreview();
             }
-            else if (e.Key == Key.E)
+            
+            else if (_selectedPoint != null) // if wasd is pressed
             {
-                if (_previewCycle != _data.Count)
-                    _previewCycle++;
-                else
-                    _previewCycle = 1;
-                UpdatePreview();
+                if (e.Key is Key.W) Canvas.SetTop(_selectedPoint, Canvas.GetTop(_selectedPoint) - PxlShift);
+                else if (e.Key is Key.A) Canvas.SetLeft(_selectedPoint, Canvas.GetLeft(_selectedPoint) - PxlShift);
+                else if (e.Key is Key.S) Canvas.SetTop(_selectedPoint, Canvas.GetTop(_selectedPoint) + PxlShift);
+                else if (e.Key is Key.D) Canvas.SetLeft(_selectedPoint, Canvas.GetLeft(_selectedPoint) + PxlShift);
+                DrawQuads();
             }
+
             DisplayWarnings();
         }
 
@@ -637,7 +645,7 @@ namespace TextureRipper
 
         private void TimerElapsed(object? sender, ElapsedEventArgs e)
         {
-            Dispatcher.Invoke(CalculateBitmaps);
+            Dispatcher.Invoke(() => CalculateBitmaps());
         }
         
         private void StopTimer()
