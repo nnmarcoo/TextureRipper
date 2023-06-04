@@ -43,8 +43,12 @@ namespace TextureRipper
         private int _previewCycle = 1;
         
         private readonly SolidColorBrush _lineStroke = new(Color.FromArgb(255, 255, 0, 0));
-        private readonly SolidColorBrush _selectedStroke = new(Color.FromArgb(255, 0, 141, 213));
+        
         private readonly DoubleCollection _strokeDashArray = new() { 3, 1 };
+
+        private readonly SolidColorBrush _pointStroke = new((Color)ColorConverter.ConvertFromString("#f04747"));
+        private readonly SolidColorBrush _pointFill = new(Color.FromArgb(64, 114, 137, 218));
+        private readonly SolidColorBrush _selectedPointStroke = new(Color.FromArgb(255, 0, 141, 213));
 
         private Timer? _timer;
         private CancellationTokenSource? _tokenSource;
@@ -286,14 +290,14 @@ namespace TextureRipper
 
             if (e.OriginalSource is Rectangle source) // if clicking on a rectangle (dragging)
             {
-                if (_selectedPoint != null) _selectedPoint.Stroke = _lineStroke; // reset color
+                if (_selectedPoint != null) _selectedPoint.Stroke = _pointStroke; // reset color
                 
                 _selectedPoint = source;
                 _lastMousePosition = e.GetPosition(Canvas);
                 _isDraggingPoint = true;
                 _selectedPoint?.CaptureMouse();
 
-                if (_selectedPoint != null) _selectedPoint.Stroke = _selectedStroke; // set selected point
+                if (_selectedPoint != null) _selectedPoint.Stroke = _selectedPointStroke; // set selected point
             }
             else
             {
@@ -312,8 +316,8 @@ namespace TextureRipper
                     Width = 30,
                     Height = 30,
                     StrokeThickness = 1,
-                    Stroke = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#f04747")),
-                    Fill = new SolidColorBrush(Color.FromArgb(64, 114, 137, 218))
+                    Stroke = _pointStroke,
+                    Fill = _pointFill
                 };
 
                 // Set the position of the rectangle to the position of the mouse
@@ -597,12 +601,29 @@ namespace TextureRipper
             
             else if (_selectedPoint != null) // pixel shift
             {
-                if (e.Key is Key.W or Key.Up) Canvas.SetTop(_selectedPoint, Canvas.GetTop(_selectedPoint) - PxlShift);
-                else if (e.Key is Key.A or Key.Left) Canvas.SetLeft(_selectedPoint, Canvas.GetLeft(_selectedPoint) - PxlShift);
-                else if (e.Key is Key.S or Key.Down) Canvas.SetTop(_selectedPoint, Canvas.GetTop(_selectedPoint) + PxlShift);
-                else if (e.Key is Key.D or Key.Right) Canvas.SetLeft(_selectedPoint, Canvas.GetLeft(_selectedPoint) + PxlShift);
-                CalculateBitmaps(true);
-                DrawQuads();
+                switch (e.Key) // this is so ugly
+                {
+                    case Key.W or Key.Up:
+                        Canvas.SetTop(_selectedPoint, Canvas.GetTop(_selectedPoint) - PxlShift);
+                        CalculateBitmaps(true);
+                        DrawQuads();
+                        break;
+                    case Key.A or Key.Left:
+                        Canvas.SetLeft(_selectedPoint, Canvas.GetLeft(_selectedPoint) - PxlShift);
+                        CalculateBitmaps(true);
+                        DrawQuads();
+                        break;
+                    case Key.S or Key.Down:
+                        Canvas.SetTop(_selectedPoint, Canvas.GetTop(_selectedPoint) + PxlShift);
+                        CalculateBitmaps(true);
+                        DrawQuads();
+                        break;
+                    case Key.D or Key.Right:
+                        Canvas.SetLeft(_selectedPoint, Canvas.GetLeft(_selectedPoint) + PxlShift);
+                        CalculateBitmaps(true);
+                        DrawQuads();
+                        break;
+                }
             }
 
             DisplayWarnings();
