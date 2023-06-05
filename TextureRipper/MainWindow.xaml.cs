@@ -590,7 +590,7 @@ namespace TextureRipper
                     DrawQuads();
                 }
             }
-            else if (e.Key == Key.C) Info.Visibility = Info.IsVisible ? Visibility.Collapsed : Visibility.Visible; // show keybinds
+            else if (e.Key is Key.C) Info.Visibility = Info.IsVisible ? Visibility.Collapsed : Visibility.Visible; // show key binds
             
             else if (e.Key is Key.Q or Key.E) // cycle preview images
             {
@@ -601,31 +601,60 @@ namespace TextureRipper
             
             else if (_selectedPoint != null) // pixel shift
             {
-                switch (e.Key) // this is so ugly
+                if (e.Key is Key.LeftShift)
                 {
-                    case Key.W or Key.Up:
-                        Canvas.SetTop(_selectedPoint, Canvas.GetTop(_selectedPoint) - PxlShift);
-                        CalculateBitmaps(true);
-                        DrawQuads();
-                        break;
-                    case Key.A or Key.Left:
-                        Canvas.SetLeft(_selectedPoint, Canvas.GetLeft(_selectedPoint) - PxlShift);
-                        CalculateBitmaps(true);
-                        DrawQuads();
-                        break;
-                    case Key.S or Key.Down:
-                        Canvas.SetTop(_selectedPoint, Canvas.GetTop(_selectedPoint) + PxlShift);
-                        CalculateBitmaps(true);
-                        DrawQuads();
-                        break;
-                    case Key.D or Key.Right:
-                        Canvas.SetLeft(_selectedPoint, Canvas.GetLeft(_selectedPoint) + PxlShift);
-                        CalculateBitmaps(true);
-                        DrawQuads();
-                        break;
+                    switch (e.Key)
+                    {
+                        //todo calculate the selected quad and shift all of them, optimize later to remove redundant block
+                        case Key.W or Key.Up:
+                            Canvas.SetTop(_selectedPoint, Canvas.GetTop(_selectedPoint) - PxlShift);
+                            CalculateBitmaps(true);
+                            DrawQuads();
+                            break;
+                        case Key.A or Key.Left:
+                            Canvas.SetLeft(_selectedPoint, Canvas.GetLeft(_selectedPoint) - PxlShift);
+                            CalculateBitmaps(true);
+                            DrawQuads();
+                            break;
+                        case Key.S or Key.Down:
+                            Canvas.SetTop(_selectedPoint, Canvas.GetTop(_selectedPoint) + PxlShift);
+                            CalculateBitmaps(true);
+                            DrawQuads();
+                            break;
+                        case Key.D or Key.Right:
+                            Canvas.SetLeft(_selectedPoint, Canvas.GetLeft(_selectedPoint) + PxlShift);
+                            CalculateBitmaps(true);
+                            DrawQuads();
+                            break;
+                    }
+                }
+                else
+                {
+                    switch (e.Key)
+                    {
+                        case Key.W or Key.Up:
+                            Canvas.SetTop(_selectedPoint, Canvas.GetTop(_selectedPoint) - PxlShift);
+                            CalculateBitmaps(true);
+                            DrawQuads();
+                            break;
+                        case Key.A or Key.Left:
+                            Canvas.SetLeft(_selectedPoint, Canvas.GetLeft(_selectedPoint) - PxlShift);
+                            CalculateBitmaps(true);
+                            DrawQuads();
+                            break;
+                        case Key.S or Key.Down:
+                            Canvas.SetTop(_selectedPoint, Canvas.GetTop(_selectedPoint) + PxlShift);
+                            CalculateBitmaps(true);
+                            DrawQuads();
+                            break;
+                        case Key.D or Key.Right:
+                            Canvas.SetLeft(_selectedPoint, Canvas.GetLeft(_selectedPoint) + PxlShift);
+                            CalculateBitmaps(true);
+                            DrawQuads();
+                            break;
+                    }
                 }
             }
-
             DisplayWarnings();
         }
 
