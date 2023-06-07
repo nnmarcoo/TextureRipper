@@ -658,6 +658,14 @@ namespace TextureRipper
             DisplayWarnings();
         }
 
+        private int GetQuad(Rectangle point)
+        {
+            for (int i = 0; i < Canvas.Children.OfType<Rectangle>().Count(); i+=4)
+                if ((int)point.Tag > i && (int)point.Tag < i + 4)
+                    return i;
+            return -1;
+        }
+
         private void MainWindowClosing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             // Create the animation for opacity
