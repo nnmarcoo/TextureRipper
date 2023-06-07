@@ -427,7 +427,7 @@ namespace TextureRipper
                             () => _data[selectedQuad] = Quad.WarpImage(_file, Quad.CalcH(remappedPoints),
                                 remappedPoints, token, progress), token);
                     }
-                    catch (OperationCanceledException)
+                    catch (Exception) // should be OperationCanceledException but that doesn't work
                     {
                         //ignored
                     }
@@ -599,30 +599,33 @@ namespace TextureRipper
                 UpdatePreview();
             }
             
-            else if (_selectedPoint != null) // pixel shift
+            else if (e.Key is Key.Tab)
+                CycleSelectedPoint();
+
+            else if (_selectedPoint != null) // pixel shift // todo broken always triggers, fix it
             {
-                if (e.Key is Key.LeftShift)
+                if (Keyboard.Modifiers == ModifierKeys.Shift)
                 {
+                    var quad = GetQuad((int)_selectedPoint.Tag);
                     switch (e.Key)
                     {
-                        //todo calculate the selected quad and shift all of them, optimize later to remove redundant block
                         case Key.W or Key.Up:
-                            Canvas.SetTop(_selectedPoint, Canvas.GetTop(_selectedPoint) - PxlShift);
+                            ShiftQuad(quad, 0, PxlShift);
                             CalculateBitmaps(true);
                             DrawQuads();
                             break;
                         case Key.A or Key.Left:
-                            Canvas.SetLeft(_selectedPoint, Canvas.GetLeft(_selectedPoint) - PxlShift);
+                            ShiftQuad(quad, PxlShift, 0);
                             CalculateBitmaps(true);
                             DrawQuads();
                             break;
                         case Key.S or Key.Down:
-                            Canvas.SetTop(_selectedPoint, Canvas.GetTop(_selectedPoint) + PxlShift);
+                            ShiftQuad(quad, 0, -PxlShift);
                             CalculateBitmaps(true);
                             DrawQuads();
                             break;
                         case Key.D or Key.Right:
-                            Canvas.SetLeft(_selectedPoint, Canvas.GetLeft(_selectedPoint) + PxlShift);
+                            ShiftQuad(quad, -PxlShift, 0);
                             CalculateBitmaps(true);
                             DrawQuads();
                             break;
@@ -658,12 +661,40 @@ namespace TextureRipper
             DisplayWarnings();
         }
 
-        private int GetQuad(Rectangle point)
+        private void CycleSelectedPoint()
         {
-            for (int i = 0; i < Canvas.Children.OfType<Rectangle>().Count(); i+=4)
-                if ((int)point.Tag > i && (int)point.Tag < i + 4)
-                    return i;
-            return -1;
+            if (_selectedPoint == null) return;
+            
+            var points = Canvas.Children.OfType<Rectangle>().ToList();
+            
+            _selectedPoint.Stroke = _pointStroke; // reset color
+            
+            if ((int)_selectedPoint.Tag % 4 == 0)
+                _selectedPoint = points[(int)_selectedPoint.Tag - 4];
+            else
+                _selectedPoint = points[(int)_selectedPoint.Tag];
+
+            _selectedPoint.Stroke = _selectedPointStroke;
+        }
+
+        private int GetQuad(int point)
+        {
+            var quad = 0;
+            for (var i = 0; i < Canvas.Children.OfType<Rectangle>().Count(); i+=4)
+                if (point > i && point < i + 4)
+                    quad = i;
+            return quad;
+        }
+
+        private void ShiftQuad(int start, int horiz, int vert)
+        {
+            var points = Canvas.Children.OfType<Rectangle>().ToList();
+            for (var i = 0; i < 4; i++)
+            {
+                Canvas.SetLeft(points[start + i], Canvas.GetLeft(points[start + i]) - horiz);
+                Canvas.SetTop(points[start + i], Canvas.GetTop(points[start + i]) - vert);
+            }
+
         }
 
         private void MainWindowClosing(object sender, System.ComponentModel.CancelEventArgs e)
