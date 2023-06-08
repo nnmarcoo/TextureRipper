@@ -105,7 +105,13 @@
                 <Image
                     x:Name="PreviewImage"
                     HorizontalAlignment="Right"
-                    VerticalAlignment="Bottom"/>
+                    VerticalAlignment="Bottom"
+                    MouseWheel="ZoomPreviewImage"
+                    MouseRightButtonDown="CanvasMouseRightButtonDown"
+                    MouseLeftButtonDown="ManipulatePoint"
+                    MouseLeftButtonUp="DragPoint"
+                    MouseMove="CanvasMouseMove"
+                    DragOver="CanvasOnDragOver"/>
                 
                 <Image Source="images/file.png"
                        x:Name="FileImage"

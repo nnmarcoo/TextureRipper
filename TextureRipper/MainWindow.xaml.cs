@@ -232,10 +232,24 @@ namespace TextureRipper
                 Canvas.SetTop(point, Canvas.GetTop(point) + (dropPosition.Y - _dragMouseOrigin.Y));
             }
             _dragMouseOrigin = dropPosition;
-
-            //if (Canvas.Children.OfType<Rectangle>().Count() < 20)
+            
                 DrawQuads();
             DisplayWarnings();
+        }
+        
+        private void ZoomPreviewImage(object sender, MouseWheelEventArgs e) // todo unfinished, scale width should be saved as class attribute to be applied on change
+        {
+            if (_file == null) return;
+            if ((PreviewImage.ActualWidth * (e.Delta < 0 ? 0.7 : 1.3)) > (Canvas.ActualWidth) || 
+                (PreviewImage.ActualWidth * (e.Delta < 0 ? 0.7 : 1.3)) < (0.2 * Canvas.ActualWidth)) return;
+            
+            var zoom = e.Delta < 0 ? 0.7 : 1.3;
+            
+            double newWidth = PreviewImage.ActualWidth * zoom;
+            double newHeight = PreviewImage.ActualHeight * zoom;
+
+            PreviewImage.Width = newWidth;
+            PreviewImage.Height = newHeight;
         }
 
         private void ZoomImage(object sender, MouseWheelEventArgs e)
@@ -599,10 +613,9 @@ namespace TextureRipper
                 UpdatePreview();
             }
             
-            else if (e.Key is Key.Tab)
-                CycleSelectedPoint();
+            else if (e.Key is Key.Tab) CycleSelectedPoint(); // cycle selected point
 
-            else if (_selectedPoint != null) // pixel shift // todo broken always triggers, fix it
+            if (_selectedPoint != null) // pixel shift
             {
                 if (Keyboard.Modifiers == ModifierKeys.Shift)
                 {
@@ -663,38 +676,35 @@ namespace TextureRipper
 
         private void CycleSelectedPoint()
         {
-            if (_selectedPoint == null) return;
+            if (_selectedPoint == null || Canvas.Children.OfType<Rectangle>().Count() < 4) return;
             
             var points = Canvas.Children.OfType<Rectangle>().ToList();
             
             _selectedPoint.Stroke = _pointStroke; // reset color
             
-            if ((int)_selectedPoint.Tag % 4 == 0)
-                _selectedPoint = points[(int)_selectedPoint.Tag - 4];
-            else
-                _selectedPoint = points[(int)_selectedPoint.Tag];
+            _selectedPoint = (int)_selectedPoint.Tag % 4 == 0 ? points[(int)_selectedPoint.Tag - 4] : points[(int)_selectedPoint.Tag];
 
             _selectedPoint.Stroke = _selectedPointStroke;
         }
 
         private int GetQuad(int point)
         {
-            var quad = 0;
             for (var i = 0; i < Canvas.Children.OfType<Rectangle>().Count(); i+=4)
                 if (point > i && point < i + 4)
-                    quad = i;
-            return quad;
+                    return i;
+            return 0;
         }
 
         private void ShiftQuad(int start, int horiz, int vert)
         {
+            if (Canvas.Children.OfType<Rectangle>().Count() < 4) return;
+            
             var points = Canvas.Children.OfType<Rectangle>().ToList();
             for (var i = 0; i < 4; i++)
             {
                 Canvas.SetLeft(points[start + i], Canvas.GetLeft(points[start + i]) - horiz);
                 Canvas.SetTop(points[start + i], Canvas.GetTop(points[start + i]) - vert);
             }
-
         }
 
         private void MainWindowClosing(object sender, System.ComponentModel.CancelEventArgs e)
