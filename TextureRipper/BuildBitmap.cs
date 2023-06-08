@@ -81,7 +81,7 @@ public class BuildBitmap
     /// <summary>
     /// Calculates the output dimensions of the mosaic bitmap.
     /// </summary>
-    private Point CalcOutDim() //todo add margin
+    private Point CalcOutDim()
     {
         var dim = new Point();
         foreach (var bitmap in _inBitmaps)

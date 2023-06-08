@@ -5,7 +5,7 @@ using System.Drawing;
 using System.Threading;
 using System.Windows;
 
-namespace TextureRipper;
+namespace TextureRipper; // todo optimize such that calculating H does not involve inverting the matrix, and instead solves the linear system | LU decomposition
 
 /// <summary>
 /// Class <c>Quad</c> contains methods for calculating and applying a homography matrix to an image.
@@ -92,7 +92,7 @@ public static class Quad
     {                                                   // in this case, the top left of d will always be the top left of s
         return new[,]
         {
-            {s[0].X, s[0].Y, 1, 0, 0, 0, -d[0].X*s[0].X, -d[0].X*s[0].Y}, // I could loop but I like this visual
+            {s[0].X, s[0].Y, 1, 0, 0, 0, -d[0].X*s[0].X, -d[0].X*s[0].Y},
             {0, 0, 0, s[0].X, s[0].Y, 1, -d[0].Y*s[0].X, -d[0].Y*s[0].Y},
             
             {s[1].X, s[1].Y, 1, 0, 0, 0, -d[1].X*s[1].X, -d[1].X*s[1].Y},
@@ -102,7 +102,7 @@ public static class Quad
             {0, 0, 0, s[2].X, s[2].Y, 1, -d[2].Y*s[2].X, -d[2].Y*s[2].Y},
             
             {s[3].X, s[3].Y, 1, 0, 0, 0, -d[3].X*s[3].X, -d[3].X*s[3].Y},
-            {0, 0, 0, s[3].X, s[3].Y, 1, -d[3].Y*s[3].X, -d[3].Y*s[3].Y},
+            {0, 0, 0, s[3].X, s[3].Y, 1, -d[3].Y*s[3].X, -d[3].Y*s[3].Y}
         };
     }
 
@@ -131,7 +131,7 @@ public static class Quad
     /// </summary>
     /// <param name="a">The matrix to calculate the inverse of.</param>
     /// <returns>The inverse of matrix A.</returns>
-    private static double[,] AInverse(double[,] a) // Gauss-Jordan elimination method todo use a faster method (LU decomposition combined with forward and backward substitution?)
+    private static double[,] AInverse(double[,] a) // Gauss-Jordan elimination method
     {
         int n = a.GetLength(0);
         double[,] b = new double[n, 2 * n];
