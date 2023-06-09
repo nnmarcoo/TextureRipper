@@ -517,28 +517,6 @@ namespace TextureRipper
             return "Warning: " + missingPoints + " points outside of work area\n";
         }
 
-        private bool HasCollinearQuad()
-        {
-            if (Canvas.Children.OfType<Rectangle>().Count() < 4) return false;
-
-            var points = Canvas.Children.OfType<Rectangle>().ToList();
-
-            for (int i = 0; i < points.Count; i += 4)
-            {
-                if (i + 3 >= points.Count) // Not enough points for a complete quad
-                    break;
-
-                if ((Canvas.GetLeft(points[i]).Equals(Canvas.GetLeft(points[i+1])) &&
-                    Canvas.GetLeft(points[i]).Equals(Canvas.GetLeft(points[i+2])) &&
-                    Canvas.GetLeft(points[i]).Equals(Canvas.GetLeft(points[i+3]))) ||
-                    Canvas.GetTop(points[i]).Equals(Canvas.GetTop(points[i+1])) &&
-                    Canvas.GetTop(points[i]).Equals(Canvas.GetTop(points[i+2])) &&
-                    Canvas.GetTop(points[i]).Equals(Canvas.GetTop(points[i+3])))
-                    return true;
-            }
-            return false;
-        }
-
         private int InvalidNumPoints()
         {
             return Canvas.Children.OfType<Rectangle>().Count() % 4;
@@ -551,18 +529,12 @@ namespace TextureRipper
             if (invalidPoints == 1) return "Warning: 1 disjointed point\n";
             return "Warning: " + invalidPoints + " disjointed points\n";
         }
-        
-        private string CollinearQuadFormat()
-        {
-            return HasCollinearQuad() ? "Warning: Collinear quad\n" : "";
-        }
 
         private void DisplayWarnings()
         {
             var warning = "";
 
                 warning += MissingPointsFormat();
-                warning += CollinearQuadFormat();
                 warning += InvalidNumPointsFormat();
 
                 Warning.Text = warning;
