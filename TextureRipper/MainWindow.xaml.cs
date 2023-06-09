@@ -237,7 +237,7 @@ namespace TextureRipper
             DisplayWarnings();
         }
         
-        private void ZoomPreviewImage(object sender, MouseWheelEventArgs e) // todo unfinished, scale width should be saved as class attribute to be applied on change
+        private void ZoomPreviewImage(object sender, MouseWheelEventArgs e) // todo fix scale contradiction with updating preview
         {
             if (_file == null) return;
             if ((PreviewImage.ActualWidth * (e.Delta < 0 ? 0.7 : 1.3)) > (Canvas.ActualWidth) || 
