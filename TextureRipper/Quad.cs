@@ -6,7 +6,7 @@ using System.Threading;
 using System.Windows;
 
 namespace TextureRipper; // todo optimize such that calculating H does not involve inverting the matrix, and instead solves the linear system | LU decomposition
-
+                         // todo optimize so the inverse is only calculated once
 /// <summary>
 /// Class <c>Quad</c> contains methods for calculating and applying a homography matrix to an image.
 /// </summary>

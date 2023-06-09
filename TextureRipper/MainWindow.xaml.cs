@@ -461,9 +461,11 @@ namespace TextureRipper
         private void UpdatePreview()
         {
             if (_data.Values.FirstOrDefault() == null) return;
-            
-            PreviewImage.Source = BitmapToBitmapSource(_data[_previewCycle]);
-            PreviewImage.Height = Canvas.ActualHeight / 3;
+
+            var prevWidth = PreviewImage.Source != null ? PreviewImage.ActualWidth : Canvas.ActualHeight / 3;
+
+            PreviewImage!.Source = BitmapToBitmapSource(_data[_previewCycle]);
+            PreviewImage.Width = prevWidth;
 
             GC.Collect(); // is this even doing anything
         }
