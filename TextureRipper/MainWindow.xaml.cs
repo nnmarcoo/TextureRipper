@@ -240,8 +240,8 @@ namespace TextureRipper
         private void ZoomPreviewImage(object sender, MouseWheelEventArgs e) // todo fix scale contradiction with updating preview
         {
             if (_file == null) return;
-            if ((PreviewImage.ActualWidth * (e.Delta < 0 ? 0.7 : 1.3)) > (Canvas.ActualWidth) || 
-                (PreviewImage.ActualWidth * (e.Delta < 0 ? 0.7 : 1.3)) < (0.2 * Canvas.ActualWidth)) return;
+            if (PreviewImage.ActualWidth * (e.Delta < 0 ? 0.7 : 1.3) > Canvas.ActualWidth || 
+                PreviewImage.ActualWidth * (e.Delta < 0 ? 0.7 : 1.3) < Canvas.ActualWidth / 3) return;
             
             var zoom = e.Delta < 0 ? 0.7 : 1.3;
             
@@ -466,7 +466,6 @@ namespace TextureRipper
 
             PreviewImage!.Source = BitmapToBitmapSource(_data[_previewCycle]);
             PreviewImage.Width = prevWidth;
-
             GC.Collect(); // is this even doing anything
         }
 
