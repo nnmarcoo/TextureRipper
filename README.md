@@ -28,4 +28,6 @@ TextureRipper is a tool written in C# using WPF that allows you to select a plan
 - Left click to place/drag a point
 - Right click to pan the image
 - Scroll to zoom
-- Press the top left save button to output the corrected selections
+- Tab to cycle the selected point
+- Arrow keys or WASD to shift selected pixel
+- Shift + arrow keys or WASD to shift selected quad
