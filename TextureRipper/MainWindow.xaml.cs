@@ -241,9 +241,10 @@ namespace TextureRipper
         {
             if (_file == null) return;
             var zoom = e.Delta < 0 ? 0.7 : 1.3;
-            if (PreviewImage.ActualHeight * zoom > Canvas.ActualHeight && zoom == 1.3)
+            const double tolerance = 0.01;
+            if (PreviewImage.ActualHeight * zoom > Canvas.ActualHeight && Math.Abs(zoom - 1.3) < tolerance)
                 return;
-            if (PreviewImage.ActualHeight * zoom < Canvas.ActualHeight / 5 && zoom == 0.7)
+            if (PreviewImage.ActualHeight * zoom < Canvas.ActualHeight / 5 && Math.Abs(zoom - 0.7) < tolerance)
                 return;
 
 
