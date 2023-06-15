@@ -28,7 +28,7 @@ namespace TextureRipper
     /// Interaction logic for MainWindow.xaml
     /// </summary>
     public partial class MainWindow //todo reorder the points as they're added instead of repeating the calculation
-    {
+    {                               //todo fix preview image zooming
         private BitmapImage? _file;
         private readonly Dictionary<int, Bitmap> _data = new();
         
