@@ -28,7 +28,9 @@ namespace TextureRipper
     /// Interaction logic for MainWindow.xaml
     /// </summary>
     public partial class MainWindow //todo reorder the points as they're added instead of repeating the calculation
-    {                               //todo fix preview image zooming
+    {
+        private string _tester = "";
+        
         private BitmapImage? _file;
         private readonly Dictionary<int, Bitmap> _data = new();
         
@@ -497,6 +499,11 @@ namespace TextureRipper
                 element.UpdateLayout();
             }
         }
+        
+        private void PreviewOnMouseEnter(object sender, DragEventArgs e)
+        {
+            _tester = e.GetPosition((UIElement)sender).X + " " + e.GetPosition((UIElement)sender).Y;
+        }
 
 
         //WARNINGS
@@ -532,7 +539,7 @@ namespace TextureRipper
 
         private void DisplayWarnings()
         {
-            var warning = "";
+            var warning = _tester + "";
 
                 warning += MissingPointsFormat();
                 warning += InvalidNumPointsFormat();
