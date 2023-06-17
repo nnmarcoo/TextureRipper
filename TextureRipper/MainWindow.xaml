@@ -99,19 +99,15 @@
                         x:Name="SourceImage"
                         MouseRightButtonDown="CanvasMouseRightButtonDown"
                         MouseMove="CanvasMouseMove"/>
-                    
                 </Canvas>
                 
                 <Image
                     x:Name="PreviewImage"
                     HorizontalAlignment="Right"
                     VerticalAlignment="Bottom"
-                    MouseWheel="ZoomPreviewImage"
-                    MouseRightButtonDown="CanvasMouseRightButtonDown"
-                    MouseLeftButtonDown="ManipulatePoint"
-                    MouseLeftButtonUp="DragPoint"
-                    MouseMove="CanvasMouseMove"
-                    DragOver="CanvasOnDragOver"/>
+                    MouseWheel="ZoomPreviewImage"/>
+                
+                
                 
                 <Image Source="images/file.png"
                        x:Name="FileImage"
