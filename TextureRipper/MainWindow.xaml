@@ -105,7 +105,8 @@
                     x:Name="PreviewImage"
                     HorizontalAlignment="Right"
                     VerticalAlignment="Bottom"
-                    MouseWheel="ZoomPreviewImage"/>
+                    MouseWheel="ZoomPreviewImage"
+                    MouseMove="MouseMovePreviewImage"/>
                 
                 
                 

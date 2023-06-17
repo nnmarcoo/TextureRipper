@@ -500,7 +500,7 @@ namespace TextureRipper
             }
         }
         
-        private void PreviewOnMouseEnter(object sender, DragEventArgs e)
+        private void MouseMovePreviewImage(object sender, MouseEventArgs e)
         {
             _tester = e.GetPosition((UIElement)sender).X + " " + e.GetPosition((UIElement)sender).Y;
         }
