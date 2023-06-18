@@ -502,20 +502,21 @@ namespace TextureRipper
         
         private void MouseMovePreviewImage(object sender, MouseEventArgs e)
         {
-            const int threshold = 10; // todo change this to be a %
+            var thresholdX = PreviewImage.ActualWidth * .07;
+            var thresholdY = PreviewImage.ActualHeight * .07;
             Point mousePosition = e.GetPosition((UIElement)sender);
 
-            if (mousePosition.Y < threshold && mousePosition.X < threshold)
+            if (mousePosition.Y < thresholdY && mousePosition.X < thresholdX)
                 Window.Cursor = Cursors.SizeNWSE;
-            else if (mousePosition.X < threshold)
+            else if (mousePosition.X < thresholdX)
                 Window.Cursor = Cursors.SizeWE;
-            else if (mousePosition.Y < threshold)
+            else if (mousePosition.Y < thresholdY)
                 Window.Cursor = Cursors.SizeNS;
             else
                 Window.Cursor = null;
 
-            _tester = e.GetPosition((UIElement)sender).X + " " + e.GetPosition((UIElement)sender).Y;
-            DisplayWarnings();
+            //_tester = e.GetPosition((UIElement)sender).X + " " + e.GetPosition((UIElement)sender).Y;
+            //DisplayWarnings();
         }
         
         private void MouseLeavePreviewImage(object sender, MouseEventArgs e)
