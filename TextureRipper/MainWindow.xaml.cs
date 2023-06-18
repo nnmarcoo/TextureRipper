@@ -414,7 +414,7 @@ namespace TextureRipper
 
                 var points = Canvas.Children.OfType<Rectangle>().ToList();
 
-                var selectedQuad = (_selectedPoint != null)
+                var selectedQuad = _selectedPoint != null
                     ? (int)Math.Ceiling((double)(int)_selectedPoint.Tag / 4)
                     : (int)Math.Ceiling((double)points.Count / 4);
                 _previewCycle = selectedQuad;
@@ -502,7 +502,25 @@ namespace TextureRipper
         
         private void MouseMovePreviewImage(object sender, MouseEventArgs e)
         {
+            const int threshold = 10; // todo change this to be a %
+            Point mousePosition = e.GetPosition((UIElement)sender);
+
+            if (mousePosition.Y < threshold && mousePosition.X < threshold)
+                Window.Cursor = Cursors.SizeNWSE;
+            else if (mousePosition.X < threshold)
+                Window.Cursor = Cursors.SizeWE;
+            else if (mousePosition.Y < threshold)
+                Window.Cursor = Cursors.SizeNS;
+            else
+                Window.Cursor = null;
+
             _tester = e.GetPosition((UIElement)sender).X + " " + e.GetPosition((UIElement)sender).Y;
+            DisplayWarnings();
+        }
+        
+        private void MouseLeavePreviewImage(object sender, MouseEventArgs e)
+        {
+            Window.Cursor = null;
         }
 
 
@@ -513,7 +531,7 @@ namespace TextureRipper
                 Canvas.GetLeft(point) > Canvas.ActualWidth || 
                 Canvas.GetLeft(point) < 0 || 
                 Canvas.GetTop(point) > Canvas.ActualHeight || 
-                Canvas.GetTop(point) < 0);
+                Canvas.GetTop(point) < 0); // int
         }
 
         private string MissingPointsFormat()
