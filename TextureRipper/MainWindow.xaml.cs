@@ -556,7 +556,7 @@ namespace TextureRipper
             var thresholdY = PreviewImage.ActualHeight * .07;
             Point mousePosition = e.GetPosition((UIElement)sender);
             
-            if (mousePosition.X < thresholdX)
+            if (mousePosition.X < thresholdX && mousePosition.X < mousePosition.Y)
                 return 2;
             return mousePosition.Y < thresholdY ? 1 : 0;
         }
