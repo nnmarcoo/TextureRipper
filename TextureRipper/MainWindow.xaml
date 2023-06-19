@@ -109,8 +109,7 @@
                     MouseMove="MouseMovePreviewImage"
                     MouseLeave="MouseLeavePreviewImage"
                     MouseLeftButtonDown="LeftButtonDownPreviewImage"
-                    MouseLeftButtonUp="LeftButtonUpPreviewImage"
-                    Stretch="None"/>
+                    MouseLeftButtonUp="LeftButtonUpPreviewImage"/>
                 
                 
                 

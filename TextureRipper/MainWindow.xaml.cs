@@ -239,7 +239,7 @@ namespace TextureRipper
             DisplayWarnings();
         }
         
-        private void ZoomPreviewImage(object sender, MouseWheelEventArgs e) // todo fix scale contradiction with updating preview
+        private void ZoomPreviewImage(object sender, MouseWheelEventArgs e)
         {
             if (_file == null) return;
             var zoom = e.Delta < 0 ? 0.7 : 1.3;
@@ -511,18 +511,9 @@ namespace TextureRipper
                 Point currentPoint = e.GetPosition(PreviewImage);
                 deltaX = currentPoint.X - _dragMouseOriginPreview.X;
                 deltaY = currentPoint.Y - _dragMouseOriginPreview.Y;
-                //PreviewImage.Stretch = Stretch.None;
             }
-
-            if (draggedEdge == 3)
-            {
-                Canvas.SetLeft(PreviewImage, Canvas.GetLeft(PreviewImage) + deltaX);
-                Canvas.SetTop(PreviewImage, Canvas.GetTop(PreviewImage) + deltaY);
-                PreviewImage.Width -= deltaX;
-                PreviewImage.Height -= deltaY;
-                Window.Cursor = Cursors.SizeNWSE;
-            }
-            else if (draggedEdge == 2)
+            
+            if (draggedEdge == 2)
             {
                 Window.Cursor = Cursors.SizeWE;
             }
@@ -564,9 +555,7 @@ namespace TextureRipper
             var thresholdX = PreviewImage.ActualWidth * .07;
             var thresholdY = PreviewImage.ActualHeight * .07;
             Point mousePosition = e.GetPosition((UIElement)sender);
-
-            if (mousePosition.Y < thresholdY && mousePosition.X < thresholdX)
-                return 3;
+            
             if (mousePosition.X < thresholdX)
                 return 2;
             return mousePosition.Y < thresholdY ? 1 : 0;
@@ -662,6 +651,9 @@ namespace TextureRipper
             }
             
             else if (e.Key is Key.Tab) CycleSelectedPoint(); // cycle selected point
+            
+            else if (e.Key is Key.R) // rotate preview image
+                throw new NotImplementedException();
 
             if (_selectedPoint != null) // pixel shift
             {
