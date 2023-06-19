@@ -108,7 +108,9 @@
                     MouseWheel="ZoomPreviewImage"
                     MouseMove="MouseMovePreviewImage"
                     MouseLeave="MouseLeavePreviewImage"
-                    MouseLeftButtonDown="LeftButtonDownPreviewImage"/>
+                    MouseLeftButtonDown="LeftButtonDownPreviewImage"
+                    MouseLeftButtonUp="LeftButtonUpPreviewImage"
+                    Stretch="None"/>
                 
                 
                 

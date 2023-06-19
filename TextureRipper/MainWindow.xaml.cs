@@ -29,13 +29,12 @@ namespace TextureRipper
     /// </summary>
     public partial class MainWindow //todo reorder the points as they're added instead of repeating the calculation
     {
-        private string _tester = "";
-        
         private BitmapImage? _file;
         private readonly Dictionary<int, Bitmap> _data = new();
         
         private Point _dragMouseOrigin; // for panning
-        private Point _dragMouseOriginPreview; // for panning
+        private Point _dragMouseOriginPreview; // for preview image
+        private bool _isDraggingPreview; // for preview image
         private Point _lastMousePosition; // for dragging point
         private bool _isDraggingPoint;
         private bool _isZooming;
@@ -142,7 +141,7 @@ namespace TextureRipper
             
             BuildBitmap large = new BuildBitmap(new List<Bitmap>(_data.Values));
             
-            large.OutBitmap.Save(fileName);
+            large.OutBitmap.Save(fileName); // todo crashes sometimes based on names
             
         }
 
@@ -503,20 +502,36 @@ namespace TextureRipper
         
         private void MouseMovePreviewImage(object sender, MouseEventArgs e)
         {
-            var thresholdX = PreviewImage.ActualWidth * .07;
-            var thresholdY = PreviewImage.ActualHeight * .07;
-            Point mousePosition = e.GetPosition((UIElement)sender);
+            var draggedEdge = DraggingEdgeCondition(sender, e);
 
-            if (mousePosition.Y < thresholdY && mousePosition.X < thresholdX)
+            double deltaX = 0;
+            double deltaY = 0;
+            if (_isDraggingPreview)
+            {
+                Point currentPoint = e.GetPosition(PreviewImage);
+                deltaX = currentPoint.X - _dragMouseOriginPreview.X;
+                deltaY = currentPoint.Y - _dragMouseOriginPreview.Y;
+                //PreviewImage.Stretch = Stretch.None;
+            }
+
+            if (draggedEdge == 3)
+            {
+                Canvas.SetLeft(PreviewImage, Canvas.GetLeft(PreviewImage) + deltaX);
+                Canvas.SetTop(PreviewImage, Canvas.GetTop(PreviewImage) + deltaY);
+                PreviewImage.Width -= deltaX;
+                PreviewImage.Height -= deltaY;
                 Window.Cursor = Cursors.SizeNWSE;
-            else if (mousePosition.X < thresholdX)
+            }
+            else if (draggedEdge == 2)
+            {
                 Window.Cursor = Cursors.SizeWE;
-            else if (mousePosition.Y < thresholdY)
+            }
+            else if (draggedEdge == 1)
+            {
                 Window.Cursor = Cursors.SizeNS;
+            }
             else
                 Window.Cursor = null;
-            _tester = _dragMouseOriginPreview + "";
-            DisplayWarnings();
         }
         
         private void MouseLeavePreviewImage(object sender, MouseEventArgs e)
@@ -526,7 +541,35 @@ namespace TextureRipper
         
         private void LeftButtonDownPreviewImage(object sender, MouseButtonEventArgs e)
         {
+            var draggedEdge = DraggingEdgeCondition(sender, e);
+            
+            if (draggedEdge == 0) return;
+            
+            _isDraggingPreview = true;
+            PreviewImage.CaptureMouse();
             _dragMouseOriginPreview = e.GetPosition(PreviewImage);
+        }
+
+        private void LeftButtonUpPreviewImage(object sender, MouseButtonEventArgs e)
+        {
+            if (!_isDraggingPreview) return;
+            
+            PreviewImage.Stretch = Stretch.Uniform;
+            _isDraggingPreview = false;
+            PreviewImage.ReleaseMouseCapture();
+        }
+
+        private int DraggingEdgeCondition(object sender, MouseEventArgs e)
+        {
+            var thresholdX = PreviewImage.ActualWidth * .07;
+            var thresholdY = PreviewImage.ActualHeight * .07;
+            Point mousePosition = e.GetPosition((UIElement)sender);
+
+            if (mousePosition.Y < thresholdY && mousePosition.X < thresholdX)
+                return 3;
+            if (mousePosition.X < thresholdX)
+                return 2;
+            return mousePosition.Y < thresholdY ? 1 : 0;
         }
 
 
@@ -563,7 +606,7 @@ namespace TextureRipper
 
         private void DisplayWarnings()
         {
-            var warning = _tester + "";
+            var warning = "";
 
                 warning += MissingPointsFormat();
                 warning += InvalidNumPointsFormat();
