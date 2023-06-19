@@ -35,6 +35,7 @@ namespace TextureRipper
         private readonly Dictionary<int, Bitmap> _data = new();
         
         private Point _dragMouseOrigin; // for panning
+        private Point _dragMouseOriginPreview; // for panning
         private Point _lastMousePosition; // for dragging point
         private bool _isDraggingPoint;
         private bool _isZooming;
@@ -514,14 +515,18 @@ namespace TextureRipper
                 Window.Cursor = Cursors.SizeNS;
             else
                 Window.Cursor = null;
-
-            //_tester = e.GetPosition((UIElement)sender).X + " " + e.GetPosition((UIElement)sender).Y;
-            //DisplayWarnings();
+            _tester = _dragMouseOriginPreview + "";
+            DisplayWarnings();
         }
         
         private void MouseLeavePreviewImage(object sender, MouseEventArgs e)
         {
             Window.Cursor = null;
+        }
+        
+        private void LeftButtonDownPreviewImage(object sender, MouseButtonEventArgs e)
+        {
+            _dragMouseOriginPreview = e.GetPosition(PreviewImage);
         }
 
 

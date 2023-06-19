@@ -107,7 +107,8 @@
                     VerticalAlignment="Bottom"
                     MouseWheel="ZoomPreviewImage"
                     MouseMove="MouseMovePreviewImage"
-                    MouseLeave="MouseLeavePreviewImage"/>
+                    MouseLeave="MouseLeavePreviewImage"
+                    MouseLeftButtonDown="LeftButtonDownPreviewImage"/>
                 
                 
                 
