@@ -139,9 +139,9 @@ namespace TextureRipper
             string extension = Path.GetExtension(dialog.FileName);
             string fileName = $"{dialog.FileName}_{i}{extension}";
             
-            BuildBitmap large = new BuildBitmap(new List<Bitmap>(_data.Values));
+            BuildBitmap mosaic = new BuildBitmap(new List<Bitmap>(_data.Values));
             
-            large.OutBitmap.Save(fileName); // todo crashes sometimes based on names
+            mosaic.OutBitmap.Save(fileName); // todo crashes sometimes based on names
             
         }
 
@@ -502,6 +502,7 @@ namespace TextureRipper
         
         private void MouseMovePreviewImage(object sender, MouseEventArgs e)
         {
+            return; // unused
             var draggedEdge = DraggingEdgeCondition(sender, e);
             
             if (_isDraggingPreview)
@@ -533,11 +534,13 @@ namespace TextureRipper
         
         private void MouseLeavePreviewImage(object sender, MouseEventArgs e)
         {
+            return; // unused
             Window.Cursor = null;
         }
         
         private void LeftButtonDownPreviewImage(object sender, MouseButtonEventArgs e)
         {
+            return; // unused
             var draggedEdge = DraggingEdgeCondition(sender, e);
             
             if (draggedEdge == 0) return;
@@ -549,6 +552,7 @@ namespace TextureRipper
 
         private void LeftButtonUpPreviewImage(object sender, MouseButtonEventArgs e)
         {
+            return; // unused
             if (!_isDraggingPreview) return;
             
             PreviewImage.Stretch = Stretch.Uniform;
@@ -558,6 +562,7 @@ namespace TextureRipper
 
         private int DraggingEdgeCondition(object sender, MouseEventArgs e)
         {
+            return -1; // unused
             var thresholdX = PreviewImage.ActualWidth * .07; // can be simplified?
             var thresholdY = PreviewImage.ActualHeight * .07;
             Point mousePosition = e.GetPosition((UIElement)sender);
@@ -660,8 +665,15 @@ namespace TextureRipper
             
             else if (e.Key is Key.R) // rotate preview image
             {
-                _data[_previewCycle].RotateFlip(RotateFlipType.Rotate90FlipNone);
-                UpdatePreview();
+                try
+                {
+                    _data[_previewCycle].RotateFlip(RotateFlipType.Rotate90FlipNone);
+                    UpdatePreview();
+                }
+                catch
+                {
+                    // ignored
+                }
             }
 
             if (_selectedPoint != null) // pixel shift
