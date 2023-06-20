@@ -503,24 +503,30 @@ namespace TextureRipper
         private void MouseMovePreviewImage(object sender, MouseEventArgs e)
         {
             var draggedEdge = DraggingEdgeCondition(sender, e);
-
-            double deltaX = 0;
-            double deltaY = 0;
+            
             if (_isDraggingPreview)
             {
                 Point currentPoint = e.GetPosition(PreviewImage);
-                deltaX = currentPoint.X - _dragMouseOriginPreview.X;
-                deltaY = currentPoint.Y - _dragMouseOriginPreview.Y;
+                double deltaX = currentPoint.X - _dragMouseOriginPreview.X;
+                double deltaY = currentPoint.Y - _dragMouseOriginPreview.Y;
+                //PreviewImage.Stretch = Stretch.None;
+                
+                if (draggedEdge == 2)
+                {
+                    Canvas.SetLeft(PreviewImage, Canvas.GetLeft(PreviewImage) + deltaX);
+                    PreviewImage.Width -= deltaX;
+                }
+                else if (draggedEdge == 1)
+                {
+                    Canvas.SetTop(PreviewImage, Canvas.GetTop(PreviewImage) + deltaY);
+                    PreviewImage.Height -= deltaY;
+                }
             }
-            
+
             if (draggedEdge == 2)
-            {
                 Window.Cursor = Cursors.SizeWE;
-            }
             else if (draggedEdge == 1)
-            {
                 Window.Cursor = Cursors.SizeNS;
-            }
             else
                 Window.Cursor = null;
         }
@@ -552,7 +558,7 @@ namespace TextureRipper
 
         private int DraggingEdgeCondition(object sender, MouseEventArgs e)
         {
-            var thresholdX = PreviewImage.ActualWidth * .07;
+            var thresholdX = PreviewImage.ActualWidth * .07; // can be simplified?
             var thresholdY = PreviewImage.ActualHeight * .07;
             Point mousePosition = e.GetPosition((UIElement)sender);
             
@@ -653,7 +659,10 @@ namespace TextureRipper
             else if (e.Key is Key.Tab) CycleSelectedPoint(); // cycle selected point
             
             else if (e.Key is Key.R) // rotate preview image
-                throw new NotImplementedException();
+            {
+                _data[_previewCycle].RotateFlip(RotateFlipType.Rotate90FlipNone);
+                UpdatePreview();
+            }
 
             if (_selectedPoint != null) // pixel shift
             {
