@@ -4,6 +4,7 @@ using Point = System.Windows.Point;
 using System.Drawing;
 using System.Threading;
 using System.Windows;
+using System.Windows.Controls;
 
 namespace TextureRipper; // todo optimize such that calculating H does not involve inverting the matrix, and instead solves the linear system | LU decomposition
                          // todo optimize so the inverse is only calculated once
@@ -37,6 +38,36 @@ public static class Quad
         {
             double angleA = Math.Atan2(a.Y - center.Y, a.X - center.X);
             double angleB = Math.Atan2(b.Y - center.Y, b.X - center.X);
+            return angleA.CompareTo(angleB);
+        });
+        return points;
+    }
+
+    /// <summary>
+    /// Orders the given points (UIElement) in clockwise order around their center point.
+    /// </summary>
+    /// <param name="points">The points (UIElement) to be ordered.</param>
+    /// <param name="canvas">The work area the UIElements are on</param>
+    /// <returns>An ordered array of the given points (UIElement).</returns>
+    public static UIElement[] OrderPointsClockwise(UIElement[] points)
+    {
+        // Find the center point of the given points
+        double cx = 0;
+        double cy = 0;
+        foreach (var p in points)
+        {
+            cx += Canvas.GetLeft(p);
+            cy += Canvas.GetTop(p);
+        }
+        cx /= points.Length;
+        cy /= points.Length;
+        Point center = new Point(cx, cy);
+
+        // Sort the points by their polar angle around the center
+        Array.Sort(points, (a, b) =>
+        {
+            double angleA = Math.Atan2(Canvas.GetTop(a) - center.Y, Canvas.GetLeft(a) - center.X);
+            double angleB = Math.Atan2(Canvas.GetTop(b) - center.Y, Canvas.GetLeft(b) - center.X);
             return angleA.CompareTo(angleB);
         });
         return points;

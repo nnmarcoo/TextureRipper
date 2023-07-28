@@ -43,6 +43,7 @@ namespace TextureRipper
         private bool _changed; // a quad has been changed
         private Rectangle? _selectedPoint;
         private int _previewCycle = 1;
+        private bool _livePointOrderUpdate;
         
         private readonly SolidColorBrush _lineStroke = new(Color.FromArgb(255, 255, 0, 0));
         
@@ -346,6 +347,25 @@ namespace TextureRipper
 
                 // Add the rectangle to the canvas
                 Canvas.Children.Add(point);
+
+                if (_livePointOrderUpdate)
+                {
+                    var points = Canvas.Children.OfType<Rectangle>().Count(); // # of rectangles
+                    var list = Canvas.Children.OfType<Rectangle>().ToList(); // list of the rectangles
+                    if (points % 4 == 0)
+                    {
+                        var quad = Quad.OrderPointsClockwise(new UIElement[]
+                        {
+                            list[points - 1], list[points - 2], list[points - 3], list[points - 4]
+                        });
+
+                        list[points - 4] = (Rectangle)quad[0];
+                        list[points - 3] = (Rectangle)quad[1];
+                        list[points - 2] = (Rectangle)quad[2];
+                        list[points - 1] = (Rectangle)quad[3];
+                    }
+                }
+
                 DrawQuads();
                 DisplayWarnings();
             }
@@ -383,13 +403,27 @@ namespace TextureRipper
             {
                 if (i + 3 >= points.Count) break;
 
-                var quad = Quad.OrderPointsClockwise( new Point[] { // this solution is wasteful
-                    new (Canvas.GetLeft(points[i]), Canvas.GetTop(points[i])),
-                    new (Canvas.GetLeft(points[i + 1]), Canvas.GetTop(points[i + 1])),
-                    new (Canvas.GetLeft(points[i + 2]), Canvas.GetTop(points[i + 2])),
-                    new (Canvas.GetLeft(points[i + 3]), Canvas.GetTop(points[i + 3]))
-                });
-                
+                Point[] quad;
+                if (_livePointOrderUpdate)
+                {
+                    quad = new Point[]
+                    {
+                        new(Canvas.GetLeft(points[i]), Canvas.GetTop(points[i])),
+                        new(Canvas.GetLeft(points[i + 1]), Canvas.GetTop(points[i + 1])),
+                        new(Canvas.GetLeft(points[i + 2]), Canvas.GetTop(points[i + 2])),
+                        new(Canvas.GetLeft(points[i + 3]), Canvas.GetTop(points[i + 3]))
+                    };
+                }
+                else
+                {
+                    quad = Quad.OrderPointsClockwise( new Point[] { // this solution is wasteful
+                        new (Canvas.GetLeft(points[i]), Canvas.GetTop(points[i])),
+                        new (Canvas.GetLeft(points[i + 1]), Canvas.GetTop(points[i + 1])),
+                        new (Canvas.GetLeft(points[i + 2]), Canvas.GetTop(points[i + 2])),
+                        new (Canvas.GetLeft(points[i + 3]), Canvas.GetTop(points[i + 3]))
+                    });
+                }
+
                 for (var j = 0; j < 4; j++) // draw quad
                 {
                     var lineIndex = i + j;
@@ -424,13 +458,26 @@ namespace TextureRipper
                     if (i + 3 >= points.Count) break;
                     if ((i == 0 ? 1 : (i+4)/4) != selectedQuad) continue; // iterationQuad != selectedQuad
                     
-                    var quad = Quad.OrderPointsClockwise(new Point[]
+                    Point[] quad;
+                    if (_livePointOrderUpdate)
                     {
-                        new(Canvas.GetLeft(points[i]), Canvas.GetTop(points[i])),
-                        new(Canvas.GetLeft(points[i + 1]), Canvas.GetTop(points[i + 1])),
-                        new(Canvas.GetLeft(points[i + 2]), Canvas.GetTop(points[i + 2])),
-                        new(Canvas.GetLeft(points[i + 3]), Canvas.GetTop(points[i + 3]))
-                    });
+                        quad = new Point[]
+                        {
+                            new(Canvas.GetLeft(points[i]), Canvas.GetTop(points[i])),
+                            new(Canvas.GetLeft(points[i + 1]), Canvas.GetTop(points[i + 1])),
+                            new(Canvas.GetLeft(points[i + 2]), Canvas.GetTop(points[i + 2])),
+                            new(Canvas.GetLeft(points[i + 3]), Canvas.GetTop(points[i + 3]))
+                        };
+                    }
+                    else
+                    {
+                        quad = Quad.OrderPointsClockwise( new Point[] { // this solution is wasteful
+                            new (Canvas.GetLeft(points[i]), Canvas.GetTop(points[i])),
+                            new (Canvas.GetLeft(points[i + 1]), Canvas.GetTop(points[i + 1])),
+                            new (Canvas.GetLeft(points[i + 2]), Canvas.GetTop(points[i + 2])),
+                            new (Canvas.GetLeft(points[i + 3]), Canvas.GetTop(points[i + 3]))
+                        });
+                    }
 
                     UpdateEverything();
                     Point[] remappedPoints =
@@ -674,6 +721,11 @@ namespace TextureRipper
                 {
                     // ignored
                 }
+            }
+            
+            else if (e.Key is Key.P) // toggle live point order update
+            {
+                _livePointOrderUpdate = !_livePointOrderUpdate;
             }
 
             if (_selectedPoint != null) // pixel shift
