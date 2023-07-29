@@ -105,11 +105,13 @@
                     x:Name="PreviewImage"
                     HorizontalAlignment="Right"
                     VerticalAlignment="Bottom"
+                    MouseRightButtonDown="CanvasMouseRightButtonDown"
                     MouseWheel="ZoomPreviewImage"
                     MouseMove="MouseMovePreviewImage"
                     MouseLeave="MouseLeavePreviewImage"
-                    MouseLeftButtonDown="LeftButtonDownPreviewImage"
-                    MouseLeftButtonUp="LeftButtonUpPreviewImage"/>
+                    MouseEnter="MouseEnterPreviewImage"
+                    DragOver="CanvasOnDragOver"
+                    MouseLeftButtonDown="ManipulatePoint"/>
                 
                 
                 

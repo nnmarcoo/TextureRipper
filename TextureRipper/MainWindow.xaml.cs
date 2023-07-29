@@ -27,7 +27,7 @@ namespace TextureRipper
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow //todo reorder the points as they're added instead of repeating the calculation
+    public partial class MainWindow
     {
         private BitmapImage? _file;
         private readonly Dictionary<int, Bitmap> _data = new();
@@ -579,10 +579,14 @@ namespace TextureRipper
                 Window.Cursor = null;
         }
         
+        private void MouseEnterPreviewImage(object sender, MouseEventArgs e)
+        {
+            PreviewImage.Opacity = .6;
+        }
+        
         private void MouseLeavePreviewImage(object sender, MouseEventArgs e)
         {
-            return; // unused
-            Window.Cursor = null;
+            PreviewImage.Opacity = 1;
         }
         
         private void LeftButtonDownPreviewImage(object sender, MouseButtonEventArgs e)
