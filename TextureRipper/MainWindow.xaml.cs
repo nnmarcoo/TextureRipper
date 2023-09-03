@@ -263,7 +263,7 @@ namespace TextureRipper
                 (SourceImage.ActualWidth * (e.Delta < 0 ? 0.7 : 1.3)) < (0.1 * ActualWidth)) return;
             _isZooming = true;
 
-            var zoom = e.Delta < 0 ? 0.7 : 1.3;
+            var zoom = e.Delta < 0 ? 0.9 : 1.1;
 
             foreach (FrameworkElement element in Canvas.Children) //Canvas.Children.OfType<Rectangle>()
             {
