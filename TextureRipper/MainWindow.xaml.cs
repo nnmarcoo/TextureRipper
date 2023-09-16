@@ -170,7 +170,7 @@ namespace TextureRipper
                 InitializeCanvas(files[0]);
         }
 
-        private void CanvasMouseRightButtonDown(object sender, MouseButtonEventArgs e) 
+        private void CanvasMouseRightButtonDown(object sender, MouseButtonEventArgs e)
         {
             _dragMouseOrigin = e.GetPosition(Canvas);// get original position of mouse
         }
@@ -221,6 +221,7 @@ namespace TextureRipper
 
         private void CanvasOnDragOver(object sender, DragEventArgs e)
         {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop)) return;
             _isPanning = true;
             Point dropPosition = e.GetPosition(Canvas);
             
