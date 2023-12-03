@@ -42,4 +42,6 @@
 FileListAbsolute.txt
 
 obj/
+bin/
+obj\
 
