@@ -33,3 +33,7 @@
 
 *.vs
 *.idea
+
+*.cache
+*.pdb
+
