@@ -34,15 +34,5 @@
 *.vs
 *.idea
 
-*.cache
 *.pdb
-
-*.editorconfig
-*.resources
-*.assets
-*.csproj
-*.txt
-
-obj/
-bin/
 
