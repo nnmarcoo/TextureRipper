@@ -39,7 +39,9 @@
 
 *.editorconfig
 *.resources
-FileListAbsolute.txt
+*.assets
+*.csproj
+*.txt
 
 obj/
 bin/
