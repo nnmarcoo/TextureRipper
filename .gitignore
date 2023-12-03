@@ -36,6 +36,7 @@
 
 *.cache
 *.pdb
+/obj
 *.editorconfig
 *.resources
 FileListAbsolute.txt
