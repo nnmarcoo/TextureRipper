@@ -41,6 +41,6 @@
 *.resources
 FileListAbsolute.txt
 
-TextureRipper\obj\
+obj/
 bin/
 
